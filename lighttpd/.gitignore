@@ -3,7 +3,6 @@
 /OUTPUT
 /build/
 /lighttpd.conf
-/lighttpd-*.conf
 /lighttpd-*/
 /server.pem
 /dhparam.pem
