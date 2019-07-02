@@ -10,11 +10,19 @@
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
 # additionally remove the cloned Memcached git repository.
 
+################################# CONSTANTS ###################################
+
 # Relative path to Graphene root
 GRAPHENEDIR = ../../../../..
 
 SRCDIR = src
 COMMIT = master
+
+ifeq ($(DEBUG),1)
+GRAPHENEDEBUG = inline
+else
+GRAPHENEDEBUG = none
+endif
 
 .PHONY=all
 all: memcached memcached.manifest pal_loader
@@ -22,11 +30,12 @@ ifeq ($(SGX),1)
 all: memcached.manifest.sgx
 endif
 
-ifeq ($(DEBUG),1)
-GRAPHENEDEBUG = inline
-else
-GRAPHENEDEBUG = none
-endif
+############################ MEMCACHED EXECUTABLE #############################
+
+# Memcached is built as usual, without any changes to the build process. The
+# source is cloned from a public GitHub repo (master tip) and built via classic
+# ./autogen.sh && ./configure && make. The result of this build process is
+# the final executable "src/memcached".
 
 $(SRCDIR)/configure:
 	git clone --recursive https://github.com/memcached/memcached $(SRCDIR)
@@ -37,10 +46,27 @@ $(SRCDIR)/memcached: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
 	cd $(SRCDIR) && make
 
+############################## MEMCACHED MANIFEST #############################
+
+# The template file contains almost all necessary information to run Memcached
+# under Graphene / Graphene-SGX. We create memcached.manifest (to be run under
+# non-SGX Graphene) by simply replacing variables in the template file via sed.
+
 memcached.manifest: memcached.manifest.template
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		$< > $@
+
+# Manifest for Graphene-SGX requires special "pal-sgx-sign" procedure. This
+# procedure measures all Memcached dependencies (shared libraries and trusted
+# files), measures Memcached code/data pages, and adds measurements in the
+# resulting manifest.sgx file (along other, less important SGX options).
+#
+# Additionally, Graphene-SGX requires EINITTOKEN and SIGSTRUCT objects (see
+# SGX hardware ABI, in particular EINIT instruction). The "pal-sgx-get-token"
+# script generates these objects and puts them in files .token and .sig
+# respectively. Note that filenames must be the same as the executable/manifest
+# name (i.e., "memcached").
 
 memcached.manifest.sgx: memcached.manifest $(SRCDIR)/memcached
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
@@ -51,11 +77,19 @@ memcached.manifest.sgx: memcached.manifest $(SRCDIR)/memcached
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output memcached.token -sig memcached.sig
 
+########################### COPIES OF EXECUTABLES #############################
+
+# Memcached build process creates the final executable as src/memcached. For
+# simplicity, copy it into our root directory.
+# Also, create a link to pal_loader for simplicity.
+
 memcached: $(SRCDIR)/memcached
 	cp $< $@
 
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
+################################## CLEANUP ####################################
 
 .PHONY=clean
 clean:
