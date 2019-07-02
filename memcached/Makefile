@@ -4,8 +4,8 @@
 # - make SGX=1         -- create SGX no-debug-log manifest
 # - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
 #
-# Any of these invokations clones Memcached git repository and builds Memcached
-# in default configuration and of latest (master branch) version.
+# Any of these invocations clones Memcached git repository and builds Memcached
+# in default configuration and in the latest (master branch) version.
 #
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
 # additionally remove the cloned Memcached git repository.
@@ -60,7 +60,7 @@ memcached.manifest: memcached.manifest.template
 # Manifest for Graphene-SGX requires special "pal-sgx-sign" procedure. This
 # procedure measures all Memcached dependencies (shared libraries and trusted
 # files), measures Memcached code/data pages, and adds measurements in the
-# resulting manifest.sgx file (along other, less important SGX options).
+# resulting manifest.sgx file (among other, less important SGX options).
 #
 # Additionally, Graphene-SGX requires EINITTOKEN and SIGSTRUCT objects (see
 # SGX hardware ABI, in particular EINIT instruction). The "pal-sgx-get-token"

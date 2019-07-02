@@ -65,7 +65,7 @@ loader.env.MEMCACHED_SLAB_BULK_CHECK =
 ################################# MOUNT FS  ###################################
 
 # General notes:
-# - There is only one supported type of mount points 'chroot'.
+# - There is only one supported type of mount points: 'chroot'.
 # - Directory names are (somewhat confusingly) prepended by 'file:'.
 # - Names of mount entries (lib, lib2, lib3) are irrelevant but must be unique.
 # - In-Graphene visible path names may be arbitrary but we reuse host-OS URIs
@@ -133,8 +133,8 @@ sgx.thread_num = 16
 
 # Specify all libraries used by Memcached and its dependencies (including all
 # libraries which can be loaded at runtime via dlopen). The paths to libraries
-# are host-OS paths. These libraries will be found at in-Graphene visible paths
-# according to mount points above.
+# are host-OS paths. These libraries will be searched for in in-Graphene visible
+# paths according to mount points above.
 #
 # As part of the build process, Graphene-SGX script (`pal-sgx-sign`) finds each
 # specified library, measures its hash, and outputs the hash in auto-generated
@@ -173,7 +173,7 @@ sgx.trusted_files.libevent = file:/usr/lib/x86_64-linux-gnu/libevent-2.0.so.5
 
 # Trusted no-library files include configuration files, read-only files, and
 # other static files. It is useful to specify such files here to make sure
-# they are not maliciously modified (modifications will be detect as hash
+# they are not maliciously modified (modifications will be detected as hash
 # mismatch by Graphene-SGX).
 #
 # Memcached does not have any configuration files, so this section is empty.
@@ -194,5 +194,5 @@ sgx.allowed_files.group     = file:/etc/group
 sgx.allowed_files.passwd    = file:/etc/passwd
 
 # getaddrinfo(3) configuration file. Glibc reads this file to correctly find
-# network address. For more info, see 'man gai.conf'.
+# network addresses. For more info, see 'man gai.conf'.
 sgx.allowed_files.gaiconf   = file:/etc/gai.conf
