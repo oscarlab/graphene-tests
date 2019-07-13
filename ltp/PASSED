@@ -1093,7 +1093,6 @@ unlinkat01,5
 unlinkat01,6
 unlinkat01,7
 ustat02,1
-vfork02,1
 wait01,1
 wait02,1
 wait401,1
