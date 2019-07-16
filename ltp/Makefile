@@ -1,6 +1,4 @@
-SRCURL = https://github.com/linux-test-project/ltp/releases/download/
-SRCVERSION = 20170116
-SRCDIR = ltp-full-$(SRCVERSION)
+SRCDIR = src
 BUILDDIR = opt/ltp
 TESTCASEDIR = $(BUILDDIR)/testcases/bin
 
@@ -12,16 +10,16 @@ clean-extra = clean-build
 level = ../../
 include ../../Makefile
 
-$(SRCDIR).tar.xz:
-	wget $(SRCURL)/$(SRCVERSION)/$@
+$(SRCDIR)/Makefile:
+	$(error "$(SRCDIR) is empty. Please run `git submodule update --init $(SRCDIR)` or download the LTP source code (https://github.com/linux-test-project/ltp) into $(SRCDIR).")
 
-$(SRCDIR)/configure: $(SRCDIR).tar.xz
-	tar -xmJf $<
+$(SRCDIR)/configure: $(SRCDIR)/Makefile
+	cd $(SRCDIR) && $(MAKE) autotools
 
 $(BUILDDIR)/runltp: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
-	cd $(SRCDIR) && make all
-	cd $(SRCDIR) && make "DESTDIR=$(PWD)" SKIP_IDCHECK=1 install
+	cd $(SRCDIR) && $(MAKE) all
+	cd $(SRCDIR) && $(MAKE) "DESTDIR=$(PWD)" SKIP_IDCHECK=1 install
 	patch -d $(dir $@) < runltp.patch
 
 $(BUILDDIR)/bin/run_in_graphene.awk: run_in_graphene.awk $(BUILDDIR)/runltp
@@ -31,7 +29,7 @@ $(TESTCASEDIR)/pal_loader: $(BUILDDIR)/runltp
 	ln -sf $(call relative-to,$(dir $@),../../../Runtime/pal_loader) $@
 
 build-manifest: $(TESTCASEDIR)/manifest.template $(TESTCASEDIR)/Makefile
-	cd $(TESTCASEDIR) && make
+	cd $(TESTCASEDIR) && $(MAKE)
 
 $(TESTCASEDIR)/manifest.template: manifest.template
 	cp -f $< $@
@@ -47,4 +45,5 @@ regression:
 	./syscalls.sh
 
 clean-build:
+	cd $(SRCDIR) && $(MAKE) clean
 	rm -rf $(BUILDDIR)
