@@ -1,6 +1,4 @@
-SRCURL = https://github.com/linux-test-project/ltp/releases/download/
-SRCVERSION = 20170116
-SRCDIR = ltp-full-$(SRCVERSION)
+SRCDIR = src
 BUILDDIR = opt/ltp
 TESTCASEDIR = $(BUILDDIR)/testcases/bin
 
@@ -12,11 +10,9 @@ clean-extra = clean-build
 level = ../../
 include ../../Makefile
 
-$(SRCDIR).tar.xz:
-	wget $(SRCURL)/$(SRCVERSION)/$@
-
-$(SRCDIR)/configure: $(SRCDIR).tar.xz
-	tar -xmJf $<
+$(SRCDIR)/configure:
+	git submodule update --init $(SRCDIR)
+	cd $(SRCDIR) && make autotools
 
 $(BUILDDIR)/runltp: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
@@ -47,4 +43,5 @@ regression:
 	./syscalls.sh
 
 clean-build:
+	cd $(SRCDIR) && make clean
 	rm -rf $(BUILDDIR)
