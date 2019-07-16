@@ -19,7 +19,7 @@ $(SRCDIR)/configure: $(SRCDIR).tar.xz
 	tar -xmJf $<
 
 $(BUILDDIR)/runltp: $(SRCDIR)/configure
-	cd $(SRCDIR) && ./configure
+	cd $(SRCDIR) && ./configure CFLAGS=-no-pie
 	cd $(SRCDIR) && make all
 	cd $(SRCDIR) && make "DESTDIR=$(PWD)" SKIP_IDCHECK=1 install
 	patch -d $(dir $@) < runltp.patch
