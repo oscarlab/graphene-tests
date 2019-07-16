@@ -819,7 +819,6 @@ select01,1
 select02,1
 semctl01,2
 semctl01,3
-semctl07,4
 semget02,2
 semget03,1
 semop01,1
@@ -1013,7 +1012,6 @@ sysconf01,7
 sysconf01,8
 sysconf01,9
 sysconf01,10
-sysconf01,11
 sysconf01,12
 sysconf01,13
 sysconf01,14
