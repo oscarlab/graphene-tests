@@ -56,6 +56,8 @@ def finish(result):
                 if output == "WARNING: no physical memory support, process creation may be slow.\n":
                     continue
 
+                if "INFO" in output:
+                    continue
                 if tokens[1].isdigit():
                     test_subtest = test + "," + tokens[1]
                     count = int(tokens[1]) + 1
