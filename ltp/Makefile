@@ -10,8 +10,10 @@ clean-extra = clean-build
 level = ../../
 include ../../Makefile
 
-$(SRCDIR)/configure:
-	git submodule update --init $(SRCDIR)
+$(SRCDIR)/Makefile:
+	$(error "$(SRCDIR) is empty. Please run `git submodule update --init $(SRCDIR)` or download the LTP source code (https://github.com/linux-test-project/ltp) into $(SRCDIR).")
+
+$(SRCDIR)/configure: $(SRCDIR)/Makefile
 	cd $(SRCDIR) && make autotools
 
 $(BUILDDIR)/runltp: $(SRCDIR)/configure
