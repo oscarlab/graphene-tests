@@ -219,7 +219,9 @@ fstat01,1
 fstat01_64,1
 fstat03,1
 fstat03_64,1
+fstatat01,1
 fstatat01,2
+fstatat01,3
 fstatat01,4
 fstatat01,5
 fstatat01,6
