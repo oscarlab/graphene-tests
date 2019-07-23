@@ -280,7 +280,6 @@ futex_wait01,1
 futex_wait01,2
 futex_wait01,3
 futex_wait01,4
-futex_wait03,1
 futex_wait04,1
 futex_wait05,1
 futex_wait05,2
@@ -1039,9 +1038,6 @@ signal06,3
 signal06,4
 signal06,5
 sigpending02,1
-sigpending02,2
-sigpending02,4
-sigpending02,5
 sigprocmask01,1
 sigsuspend01,1
 socket01,3
