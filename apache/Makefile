@@ -20,7 +20,7 @@ HTDOC=$(INSTALL_DIR)/htdocs
 
 exec_target = httpd.manifest
 
-target = build-apache build-modules build-conf test-data
+target = build-apache build-conf test-data
 
 clean-extra = clean-apache
 
@@ -29,7 +29,7 @@ extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
 level = ../../
 include ../../Makefile
 
-.PHONY: build-apache build-modules build-conf
+.PHONY: build-apache build-conf
 
 build-apache: $(INSTALL_DIR)/bin/httpd $(INSTALL_DIR)/modules/libphp5.so
 
@@ -68,13 +68,6 @@ $(INSTALL_DIR)/modules/libphp5.so: $(PHP_DIR) $(INSTALL_DIR)/bin/apxs
 	--disable-cgi --disable-cli --disable-soap
 	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $< && $(MAKE) install
-
-build-modules: $(INSTALL_DIR)/modules/mod_auth_basic_sandbox.so
-
-$(INSTALL_DIR)/modules/mod_auth_basic_sandbox.so: mod_auth_basic_sandbox.c $(INSTALL_DIR)/bin/apxs
-	$(INSTALL_DIR)/bin/apxs $(APXS_FLAGS) \
-		-S CFLAGS="-I$(SHIMDIR)/../include" \
-		-S LDFLAGS="-L. -l:$(RUNTIME)/liblibos.so.1" -c -i -A $<
 
 build-conf:
 	[ -f $(INSTALL_DIR)/conf/httpd.conf.old ] || \
@@ -151,4 +144,4 @@ distclean: clean
 	rm -rf $(INSTALL_DIR) $(SRC_DIRS)
 
 clean-apache:
-	rm -rf $(test-data) $(addprefix mod_auth_basic_sandbox,.so .la .lo .o .slo)
+	rm -rf $(test-data)
