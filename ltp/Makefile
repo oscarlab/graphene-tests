@@ -1,8 +1,9 @@
 SRCDIR = src
 BUILDDIR = opt/ltp
 TESTCASEDIR = $(BUILDDIR)/testcases/bin
+LTPSCENARIO = $(BUILDDIR)/runtest/syscalls
 
-target = $(BUILDDIR)/bin/run_in_graphene.awk $(TESTCASEDIR)/pal_loader build-manifest
+target = $(TESTCASEDIR)/pal_loader build-manifest
 exec_target =
 
 clean-extra = clean-build
@@ -19,10 +20,6 @@ $(BUILDDIR)/runltp: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
 	cd $(SRCDIR) && $(MAKE) all
 	cd $(SRCDIR) && $(MAKE) "DESTDIR=$(PWD)" SKIP_IDCHECK=1 install
-	patch -d $(dir $@) < runltp.patch
-
-$(BUILDDIR)/bin/run_in_graphene.awk: run_in_graphene.awk $(BUILDDIR)/runltp
-	cp -f $< $@
 
 $(TESTCASEDIR)/pal_loader: $(BUILDDIR)/runltp
 	ln -sf $(call relative-to,$(dir $@),../../../Runtime/pal_loader) $@
@@ -36,13 +33,20 @@ $(TESTCASEDIR)/manifest.template: manifest.template
 $(TESTCASEDIR)/Makefile: Makefile.testcases
 	ln -sf ../../../../$< $@
 
+.PHONY: regression
 regression:
-	@echo "\n\nBuilding LTP..."
-	@$(MAKE) >> /dev/null 2>&1
+	if test "$(SGX_RUN)" -eq 1; then \
+		$(RM) ltp-sgx.xml; \
+		$(MAKE) ltp-sgx.xml; \
+	else \
+		$(RM) ltp.xml; \
+		$(MAKE) ltp.xml; \
+	fi
 
-	@echo "\n\nLTP tests for system calls:"
-	./syscalls.sh
+%.xml: %.conf $(LTPSCENARIO) $(target)
+	./contrib/conf_lint.py < $<
+	./runltp_xml.py -c $< $(LTPSCENARIO) > $@
 
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) ltp*.xml
