@@ -1,5 +1,8 @@
+include ../../../../makevars.mk
+
 manifests = $(wildcard ../../../../*.manifest.template) manifest
-testcases = $(filter-out $(wildcard *.*) $(patsubst %/,%,$(wildcard */)) Makefile manifest pal_loader,$(wildcard *))
+testcases = $(shell cd ../../../../; \
+	./runltp_xml.py $(RUNLTPOPTS) -c ltp-sgx.cfg --list-executables $(LTPSCENARIO))
 
 exec_target = $(testcases)
 target = $(manifests) $(testcases) etc/nsswitch.conf etc/passwd
@@ -16,3 +19,6 @@ etc/nsswitch.conf:
 etc/passwd:
 	mkdir -p etc
 	echo "root:x:0:0:root:/root:/bin/bash\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin" > $@
+
+.PHONY: sgx-tokens
+sgx-tokens: $(call expand_target_to_token,$(testcases))
