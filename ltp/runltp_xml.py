@@ -4,9 +4,9 @@
 # Copyright (C) 2019  Wojtek Porczyk <woju@invisiblethingslab.com>
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,7 +60,7 @@ _log = logging.getLogger()
 class ForgivingConfigParser(configparser.ConfigParser):
     # ConfigParser raises NoSectionError for nonexistent sections, even when the
     # option value is set in [DEFAULT]. That's documented and expected, but not
-    # what we want. We wan't to return the default value even for nonexistent
+    # what we want. We want to return the default value even for nonexistent
     # sections.
     def get(self, section, *args, **kwds):
         try:
