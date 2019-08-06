@@ -38,8 +38,11 @@ regression:
 	$(RM) ltp.xml
 	$(MAKE) ltp.xml
 
-ltp.xml: $(target) $(BUILDDIR)/runtest/syscalls
-	./runltp_xml.py $(BUILDDIR)/runtest/syscalls > $@
+ltp.xml: $(BUILDDIR)/runtest/syscalls $(target)
+	./runltp_xml.py $< > $@
+
+ltp-sgx.xml: $(BUILDDIR)/runtest/syscalls $(target)
+	./runltp_xml.py -o sgx=1 $< > $@
 
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
