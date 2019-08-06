@@ -20,7 +20,6 @@ $(BUILDDIR)/runltp: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
 	cd $(SRCDIR) && $(MAKE) all
 	cd $(SRCDIR) && $(MAKE) "DESTDIR=$(PWD)" SKIP_IDCHECK=1 install
-	patch -d $(dir $@) < runltp.patch
 
 $(TESTCASEDIR)/pal_loader: $(BUILDDIR)/runltp
 	ln -sf $(call relative-to,$(dir $@),../../../Runtime/pal_loader) $@
