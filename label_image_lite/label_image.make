@@ -42,13 +42,13 @@ image.bmp: tensorflow/tensorflow/contrib/lite/examples/label_image/testdata/grac
 
 .PHONY=check
 check:
-	./pal_loader ./label_image.manifest.sgx  -m inception_v3.tflite -i image.bmp -t 1
+	./pal_loader ./label_image.manifest.sgx  -m inception_v3.tflite -i image.bmp
 
-.PHONY=clean-tmp
-clean-tmp:
+.PHONY=clean
+clean:
 	$(RM) libtensorflow_framework.so
 
-.PHONY=mrproper
-mrproper: clean-tmp
+.PHONY=distclean
+distclean: clean
 	$(RM) inception_v3_2018_04_27.tgz inception_v3.pb inception_v3.tflite labels.txt image.bmp
 	$(RM) -rf tensorflow

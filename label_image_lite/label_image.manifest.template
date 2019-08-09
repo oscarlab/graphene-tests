@@ -2,36 +2,17 @@
 
 loader.preload = file:$(SHIMPATH)
 loader.exec = file:label_image
-loader.execname = label_image
-loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:.
+loader.env.LD_LIBRARY_PATH = /lib:.
 loader.env.PATH = /bin:/usr/bin
-loader.env.USERNAME = root
-loader.env.HOME = /
 loader.debug_type = none
 
 fs.mount.lib1.type = chroot
 fs.mount.lib1.path = /lib
 fs.mount.lib1.uri = file:$(LIBCDIR)
 
-fs.mount.lib2.type = chroot
-fs.mount.lib2.path = /lib/x86_64-linux-gnu
-fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
+sgx.enclave_size = 512M
+sgx.thread_num = 2
 
-fs.mount.bin.type = chroot
-fs.mount.bin.path = /bin
-fs.mount.bin.uri = file:/bin
-
-fs.mount.usr.type = chroot
-fs.mount.usr.path = /usr
-fs.mount.usr.uri = file:/usr
-
-fs.mount.home.type = chroot
-fs.mount.home.path = /home
-fs.mount.home.uri = file:/home
-sys.brk.size = 256K
-
-sgx.enclave_size = 1024M
-sgx.thread_num = 16
 sgx.trusted_files.ld = file:$(LIBCDIR)/ld-linux-x86-64.so.2
 sgx.trusted_files.libc = file:$(LIBCDIR)/libc.so.6
 sgx.trusted_files.libdl = file:$(LIBCDIR)/libdl.so.2

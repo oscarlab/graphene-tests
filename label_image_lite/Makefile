@@ -5,6 +5,8 @@ target = label_image
 level = ../../
 include ../../Makefile
 
+clean_extra += clean_tmp
+
 label_image.manifest.sgx: libtensorflow_framework.so label_image
 label_image.manifest.sgx: inception_v3.tflite
 label_image.manifest.sgx: labels.txt
