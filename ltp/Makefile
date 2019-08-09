@@ -35,8 +35,13 @@ $(TESTCASEDIR)/Makefile: Makefile.testcases
 
 .PHONY: regression
 regression:
-	$(RM) ltp.xml
-	$(MAKE) ltp.xml
+	if test "$(SGX_RUN)" -eq 1; then \
+		$(RM) ltp-sgx.xml; \
+		$(MAKE) ltp-sgx.xml; \
+	else \
+		$(RM) ltp.xml; \
+		$(MAKE) ltp.xml; \
+	fi
 
 ltp.xml: $(BUILDDIR)/runtest/syscalls $(target)
 	./runltp_xml.py $< > $@
