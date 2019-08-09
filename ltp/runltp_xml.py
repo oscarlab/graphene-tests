@@ -57,17 +57,6 @@ argparser.set_defaults(
 
 _log = logging.getLogger()
 
-class ForgivingConfigParser(configparser.ConfigParser):
-    # ConfigParser raises NoSectionError for nonexistent sections, even when the
-    # option value is set in [DEFAULT]. That's documented and expected, but not
-    # what we want. We want to return the default value even for nonexistent
-    # sections.
-    def get(self, section, *args, **kwds):
-        try:
-            return super().get(section, *args, **kwds)
-        except configparser.NoSectionError:
-            return super().get(self.default_section, *args, **kwds)
-
 class TestRunner:
     def __init__(self, config):
         self.config = config
@@ -92,8 +81,16 @@ class TestRunner:
             _log.info('%s: SKIP (config)', tag)
             return 0, [result.skipped('skipped via config')]
 
+        if any(c in cmd for c in ';|&'):
+            # This is a shell command which would spawn multiple processes.
+            # We don't run those in unit tests.
+            _log.info('%s: SKIP (shell command)', tag)
+            return 0, [result.skipped('skipped for invalid shell command')]
+
+        xfail = self.config.getintset(tag, 'xfail', fallback=set())
+
+        cmd = [*self.loader, *shlex.split(cmd)]
         timeout = self.config.getfloat(tag, 'timeout')
-        cmd = [*self.loader, '/bin/sh', '-c', cmd]
         _log.info('%s: starting %r with timeout %d', tag, cmd, timeout)
         start_time = time.time()
         proc = subprocess.Popen(cmd,
@@ -126,13 +123,14 @@ class TestRunner:
             _log.info('%s: stderr: %r', stderr)
 
         result.stdout, result.stderr = stdout.decode(), stderr.decode()
-        partial = list(self._parse_test_output(tag, result.stdout, result))
+        partial = list(
+            self._parse_test_output(tag, result.stdout, result, xfail))
         if not partial:
             partial.append(result.error('binary did not provide any results'))
         return cmd_time, partial
 
     @staticmethod
-    def _parse_test_output(tag, stdout, result):
+    def _parse_test_output(tag, stdout, result, xfail):
         subtest = 0
         for line in stdout.split('\n'):
             _log.debug('%s: <- %r', tag, line)
@@ -159,13 +157,21 @@ class TestRunner:
             result.name = '{}/{}'.format(tag, subtest)
 
             if 'TPASS' in line or 'PASS:' in line:
-                _log.info('%s/%d: -> PASS', tag, subtest)
-                yield result.success()
+                if subtest in xfail:
+                    _log.warning('%s/%d: -> XFAIL/PASS', tag, subtest)
+                    yield result.skipped(line)
+                else:
+                    _log.info('%s/%d: -> PASS', tag, subtest)
+                    yield result.success()
                 continue
 
             if 'TFAIL' in line:
-                _log.warning('%s/%d: -> FAIL', tag, subtest)
-                yield result.failure(line)
+                if subtest in xfail:
+                    _log.info('%s/%d: -> XFAIL', tag, subtest)
+                    yield result.skipped(line)
+                else:
+                    _log.warning('%s/%d: -> FAIL', tag, subtest)
+                    yield result.failure(line)
                 continue
 
             if any(t in line for t in ('TCONF', 'CONF:', 'TBROK', 'BROK:')):
@@ -228,24 +234,46 @@ class XMLReport:
     def write(self, stream):
         etree.ElementTree(self.root).write(stream)
 
-def main(args=None):
-    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.WARNING)
-    args = argparser.parse_args(args)
-    _log.setLevel(_log.level - args.verbose * 10)
+class LTPConfigParser(configparser.ConfigParser):
+    # ConfigParser raises NoSectionError for nonexistent sections, even when the
+    # option value is set in [DEFAULT]. That's documented and expected, but not
+    # what we want. We want to return the default value even for nonexistent
+    # sections.
+    def get(self, section, *args, **kwds):
+        try:
+            return super().get(section, *args, **kwds)
+        except configparser.NoSectionError:
+            return super().get(self.default_section, *args, **kwds)
 
-    config = ForgivingConfigParser(
-        converters={'path': pathlib.Path},
+def _getintset(value):
+    return set(int(i) for i in value.strip().split())
+
+def load_config(file):
+    config = LTPConfigParser(
+        converters={
+            'path': pathlib.Path,
+            'intset': _getintset,
+        },
         defaults={
             'timeout': '30',
             'sgx': 'false',
             'loader': './pal_loader',
             'ltproot': './opt/ltp',
-            'junit-classname': 'apps.LTP',
+            'junit-classname': 'LTP',
         })
 
-    with args.config:
-        config.read_file(args.config)
+    with file:
+        config.read_file(file)
 
+    return config
+
+
+def main(args=None):
+    logging.basicConfig(format='%(asctime)s %(message)s', level=logging.WARNING)
+    args = argparser.parse_args(args)
+    _log.setLevel(_log.level - args.verbose * 10)
+
+    config = load_config(args.config)
     for token in args.option:
         key, value = token.split('=', maxsplit=1)
         config[config.default_section][key] = value
@@ -261,9 +289,17 @@ def main(args=None):
     report = XMLReport()
     runner = TestRunner(config)
 
+    # Running parallel tests under SGX is risky, see README. However, if user
+    # wanted to do that, we shouldn't stand in the way, just issue a warning.
+    has_sgx = self.config.getboolean(config.default_section, 'sgx')
+    processes = config.getint(config.default_section, 'jobs',
+        fallback=(1 if has_sgx else None))
+    if has_sgx and processes != 1:
+        _log.warning('WARNING: SGX is enabled and jobs = %d (!= 1);'
+            ' expect stability issues', processes)
+
     total_time = 0
-    with multiprocessing.Pool(config.getint(
-            config.default_section, 'jobs', fallback=None)) as pool:
+    with multiprocessing.Pool(processes) as pool:
         for cmd_time, partial in pool.starmap(runner.run_test, tests):
             for element in partial:
                 report.add_result(element)
