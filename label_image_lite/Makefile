@@ -41,6 +41,6 @@ check:
 clean-tmp:
 	$(MAKE) -f label_image.make clean
 
-.PHONY=mrproper
-mrproper: clean
+.PHONY=distclean
+distclean: clean
 	$(MAKE) -f label_image.make $@
