@@ -4,8 +4,7 @@ testcases = $(filter-out $(wildcard *.*) $(patsubst %/,%,$(wildcard */)) Makefil
 exec_target = $(testcases)
 target = $(manifests) $(testcases) etc/nsswitch.conf etc/passwd
 
-level = ../../../../../../
-include ../../../../../../Makefile
+include ../../../../../../Makefile.Test
 
 $(addsuffix .template,$(manifests)): %: ../../../../%
 	ln -sf $< $@

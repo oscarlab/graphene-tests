@@ -8,8 +8,7 @@ exec_target = $(manifests)
 
 extra_rules = -e 's:\$$(RDIR):$(R_INSTALL)/lib/R/:g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 $(R_INSTALL)/lib/R/bin/exec/R: $(R_SRC)/Makefile
 	cd $(R_SRC) && $(MAKE)
