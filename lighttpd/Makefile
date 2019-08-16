@@ -1,8 +1,7 @@
 manifests = lighttpd.manifest lighttpd-angel.manifest
 SRCDIR = lighttpd-1.4.30
-HOST = $(firstword $(shell ifconfig | grep 'inet addr:'| grep -v '127.0.0.1' -m 1 | cut -d: -f2))
+HOST = 127.0.0.1
 PORT = 8000
-CORES = 4
 THREADS = 25
 
 conf_files = lighttpd-server.conf lighttpd.conf lighttpd-multithreaded.conf lighttpd-ssl.conf
@@ -115,6 +114,7 @@ html/random:
 html/random/%.html: html/random
 	dd if=/dev/urandom of=$@ count=1 bs=$(basename $(basename $(notdir $@)))
 
+.PHONY: test-data
 test-data: $(test-data)
 
 .PHONY: distclean

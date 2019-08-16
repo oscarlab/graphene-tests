@@ -1,10 +1,10 @@
-HOST ?= $(firstword $(shell ifconfig | grep 'inet addr:' | grep -v '127.0.0.1' -m 1 | cut -d: -f2))
+HOST ?= 127.0.0.1
 PORT ?= 8001
 
 NPROCS := 1
 OS := $(shell uname -s)
 ifeq ($(OS),Linux)
-	NPROCS := $(shell grep -c ^processor /proc/cpuinfo)
+	NPROCS := $(shell nproc)
 endif
 
 PREFORK_WORKERS := $(shell expr $(NPROCS) + 1)
@@ -29,8 +29,7 @@ extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
 level = ../../
 include ../../Makefile
 
-.PHONY: build-apache build-conf
-
+.PHONY: build-apache
 build-apache: $(INSTALL_DIR)/bin/httpd $(INSTALL_DIR)/modules/libphp5.so
 
 ifeq ($(DEBUG),1)
@@ -69,6 +68,7 @@ $(INSTALL_DIR)/modules/libphp5.so: $(PHP_DIR) $(INSTALL_DIR)/bin/apxs
 	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $< && $(MAKE) install
 
+.PHONY: build-conf
 build-conf:
 	[ -f $(INSTALL_DIR)/conf/httpd.conf.old ] || \
 		mv $(INSTALL_DIR)/conf/httpd.conf $(INSTALL_DIR)/conf/httpd.conf.old
@@ -93,13 +93,16 @@ build-conf:
 </IfModule>\n" >> $(INSTALL_DIR)/conf/httpd.conf.new
 	cd $(INSTALL_DIR)/conf && ln -sf httpd.conf.new httpd.conf
 
+.PHONY: clean-server
 clean-server:
 	rm -f $(INSTALL_DIR)/logs/httpd-$(HOST)-$(PORT).pid
 
+.PHONY: start-native-server
 start-native-server: clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
 
+.PHONY: start-graphene-server
 start-graphene-server: clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) ./httpd.manifest -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
@@ -138,10 +141,13 @@ AuthUserFile $(HTDOC)/auth/.htpasswd\n\
 AuthGroupFile /dev/null\n\
 require user test" > $@
 
+.PHONY: test-data
 test-data: $(test-data)
 
+.PHONY: distclean
 distclean: clean
 	rm -rf $(INSTALL_DIR) $(SRC_DIRS)
 
+.PHONY: clean-apache
 clean-apache:
 	rm -rf $(test-data)
