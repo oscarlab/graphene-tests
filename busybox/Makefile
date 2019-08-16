@@ -1,8 +1,7 @@
 exec_target = busybox.manifest busybox_nofork.manifest
 target = busybox busybox_gdb busybox_nofork busybox_nofork_gdb
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 BUSYBOX_DIR = busybox-1.23.1
 

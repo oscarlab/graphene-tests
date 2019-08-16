@@ -13,8 +13,7 @@ manifests = $(addprefix $(LINUXDIR),$(patsubst %.template,%,$(wildcard *.manifes
 target = $(lmbench_tests)
 clean-extra = clean-lmbench
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 export CC
 export CFLAGS

@@ -5,8 +5,7 @@ exec_target = $(manifests)
 
 clean-extra += clean-tmp
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 clean-tmp:
 	rm -f curl.manifest.sgx

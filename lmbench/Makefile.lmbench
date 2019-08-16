@@ -10,8 +10,7 @@ lmbench_tests = lat_syscall lat_connect lat_fcntl \
 exec_target = $(lmbench_tests)
 target = $(manifests)
 
-level = ../../../../../
-include ../../../../../Makefile
+include ../../../../../Makefile.Test
 
 sh.manifest.sgx: /tmp/hello
 
