@@ -2,7 +2,7 @@ This example demonstrates how to run Tensorflow (v1.9) Lite's label_image exampl
 
 Known limitations:
 
-- Tested on Ubuntu 16.04 with Graphene's chiache/glibc-2.23 branch. Building Tensorflow on Ubuntu 16.04 creates dependencies on this newer glibc. Ubuntu 18.04 should work, but have not tested.
+- Tested on Ubuntu 16.04 with Graphene [commit 030a088](https://github.com/oscarlab/graphene/tree/030a0888926f315710da94ee6f855c466059cf6c). Ubuntu 18.04 should work, but have not tested.
 - Currently single threaded. Multi-threaded not tested.
 
 Install build dependencies with `make install-dependencies-ubuntu`.
