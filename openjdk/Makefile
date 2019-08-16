@@ -20,8 +20,7 @@ extra_rules = \
 	-e 's:\$$(JAVA_HOME):$(JAVA_HOME):g' \
 	-e 's:\$$(RESOURCE_RULE):$(RESOURCE_RULE):g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 TEST_CLASS = $(patsubst %.java,%,$(wildcard classes/*.java))
 

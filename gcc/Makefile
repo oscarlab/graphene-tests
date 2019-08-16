@@ -11,8 +11,7 @@ extra_rules = \
 	-e 's:\$$(GCCDIR):$(patsubst %/cc1,%,$(shell gcc -print-file-name=cc1)):g' \
 	-e 's:\$$(HUGERULE):$(if $(HUGE),$(huge_rule),):g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 GCC_VER = 4.8.4
 BINUTILS_VER = 2.20.1

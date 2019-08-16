@@ -16,8 +16,7 @@ extra_rules = \
 	-e 's:\$$(GCCDIR):$(patsubst %/cc1,%,$(shell gcc -print-file-name=cc1)):g' \
 	-e 's:\$$(HUGERULE):$(if $(HUGE),$(huge_rule),):g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 test_tarballs = oggenc-1.4 bzip2-1.0.6
 test_targets = $(test_tarballs) helloworld graphene

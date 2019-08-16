@@ -7,8 +7,7 @@ exec_target =
 
 clean-extra = clean-build
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 $(SRCDIR)/Makefile:
 	$(error "$(SRCDIR) is empty. Please run `git submodule update --init $(SRCDIR)` or download the LTP source code (https://github.com/linux-test-project/ltp) into $(SRCDIR).")

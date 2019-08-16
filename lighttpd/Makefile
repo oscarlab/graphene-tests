@@ -13,8 +13,7 @@ clean-extra = clean-others
 
 extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 .PHONY: build-lighttpd
 build-lighttpd: build/sbin/lighttpd

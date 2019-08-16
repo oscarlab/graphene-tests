@@ -26,8 +26,7 @@ clean-extra = clean-apache
 
 extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 .PHONY: build-apache build-conf
 

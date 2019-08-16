@@ -9,8 +9,7 @@ exec_target = $(manifests)
 extra_rules = -e 's:\$$(PYTHONDIR):$(PYTHON_INSTALL)/:g'
 clean-extra += clean-tmp
 
-level = ../../
-include ../../Makefile
+include ../../Makefile.Test
 
 $(PYTHON_INSTALL)/bin/python: $(PYTHON_SRC)/Makefile
 	cd $(PYTHON_SRC) && $(MAKE)
