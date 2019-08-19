@@ -114,12 +114,8 @@ random-data = $(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
 	      $(foreach n,1 2 3,10M.$n.html) \
 	      $(foreach n,1 2 3,100.$n.html)
 
-test-data = $(HTDOC)/oscar-web $(HTDOC)/oscar-web-static \
-	    $(addprefix $(HTDOC)/random/,$(random-data)) \
+test-data = $(addprefix $(HTDOC)/random/,$(random-data)) \
 	    $(HTDOC)/auth/secret.html $(HTDOC)/auth/.htaccess
-
-$(HTDOC)/%: $(PWD)/../web-data/%.tar.gz
-	[ -d "$@" ] || (mkdir -p $@ && cd $(HTDOC) && tar -xzf $^)
 
 $(HTDOC)/random/%.html:
 	[ -d $(HTDOC)/random ] || mkdir -p $(HTDOC)/random

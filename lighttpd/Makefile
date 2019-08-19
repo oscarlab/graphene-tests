@@ -102,11 +102,7 @@ random-data = $(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
 	      $(foreach n,1 2 3,10M.$n.html) \
 	      $(foreach n,1 2 3,100.$n.html)
 
-test-data = html/oscar-web html/oscar-web-static html/random \
-	    $(addprefix html/random/,$(random-data))
-
-html/%: ../web-data/%.tar.gz
-	[ -d "$@" ] || (cd $(dir $@) && tar -xzf ../$^)
+test-data = html/random $(addprefix html/random/,$(random-data))
 
 html/random:
 	mkdir -p $@
