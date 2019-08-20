@@ -1,6 +1,7 @@
 SRCDIR = src
 BUILDDIR = opt/ltp
 TESTCASEDIR = $(BUILDDIR)/testcases/bin
+LTPSCENARIO = $(BUILDDIR)/runtest/syscalls
 
 target = $(TESTCASEDIR)/pal_loader build-manifest
 exec_target =
@@ -43,12 +44,9 @@ regression:
 		$(MAKE) ltp.xml; \
 	fi
 
-ltp.xml: $(BUILDDIR)/runtest/syscalls $(target)
-	./runltp_xml.py $< > $@
-
-ltp-sgx.xml: $(BUILDDIR)/runtest/syscalls $(target)
-	./runltp_xml.py -o sgx=1 $< > $@
+%.xml: %.conf $(LTPSCENARIO) $(target)
+	./runltp_xml.py -c $< $(LTPSCENARIO) > $@
 
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
-	rm -rf $(BUILDDIR) ltp.xml
+	rm -rf $(BUILDDIR) ltp*.xml
