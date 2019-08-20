@@ -34,13 +34,14 @@ image.bmp:
 ../../../../../Runtime/libstdc++.so.6:
 	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $@
 
-.PHONY=check
+.PHONY: check
 check:
 	./pal_loader ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
 
+.PHONY: clean-tmp
 clean-tmp:
 	$(MAKE) -f label_image.make clean
 
-.PHONY=distclean
+.PHONY: distclean
 distclean: clean
 	$(MAKE) -f label_image.make $@

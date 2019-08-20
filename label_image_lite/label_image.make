@@ -2,10 +2,10 @@ TF_DIR ?= tensorflow
 
 BAZEL_BIN=$(HOME)/bin/bazel
 
-.PHONY=default
+.PHONY: default
 default: label_image
 
-.PHONY=install-dependencies-ubuntu
+.PHONY: install-dependencies-ubuntu
 install-dependencies-ubuntu:
 	apt-get update && apt-get -y upgrade
 	apt-get install -y python-dev python-pip
@@ -40,15 +40,15 @@ labels.txt: tensorflow/tensorflow/contrib/lite/java/ovic/src/testdata/labels.txt
 image.bmp: tensorflow/tensorflow/contrib/lite/examples/label_image/testdata/grace_hopper.bmp
 	cp $^ $@
 
-.PHONY=check
+.PHONY: check
 check:
 	./pal_loader ./label_image.manifest.sgx  -m inception_v3.tflite -i image.bmp
 
-.PHONY=clean
+.PHONY: clean
 clean:
 	$(RM) libtensorflow_framework.so
 
-.PHONY=distclean
+.PHONY: distclean
 distclean: clean
 	$(RM) inception_v3_2018_04_27.tgz inception_v3.pb inception_v3.tflite labels.txt image.bmp
 	$(RM) -rf tensorflow
