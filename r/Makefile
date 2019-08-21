@@ -48,7 +48,7 @@ endif
 # Skip the GLIBC libraries because they are already listed
 GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
-# Use the ldd result of R and stats.so
+# Use the ldd result of R, stats.so, and lapack.so
 R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/lapack.so
 
 # Collect the dependencies (without repeats)
