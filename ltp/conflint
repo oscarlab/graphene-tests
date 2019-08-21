@@ -10,11 +10,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -23,7 +23,7 @@
 
 import sys
 
-def main(file=sys.stdin):
+def count_mistakes(file):
     mistakes = 0
     with file:
         prev = ''
@@ -33,9 +33,12 @@ def main(file=sys.stdin):
                 continue
             if line < prev:
                 print(f'bad order in line {i}: {line} (after {prev})')
-                mistakes = max(mistakes + 1, 255)
+                mistakes += 1
             prev = line
     return mistakes
+
+def main(file=sys.stdin):
+    return min(count_mistakes(file), 255)
 
 if __name__ == '__main__':
     sys.exit(main())
