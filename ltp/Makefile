@@ -45,6 +45,7 @@ regression:
 	fi
 
 %.xml: %.conf $(LTPSCENARIO) $(target)
+	conflint $<
 	./runltp_xml.py -c $< $(LTPSCENARIO) > $@
 
 clean-build:
