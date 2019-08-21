@@ -13,9 +13,9 @@ fs.mount.lib1.uri = file:$(LIBCDIR)
 # Minimum amount of memory to make it work.
 sgx.enclave_size = 512M
 
-# 2 threads are sufficient when telling label_image to only use a single thread (-t 1 command line
-# parameter; see Makefile's check target).
-sgx.thread_num = 2
+# Graphene internally consumes up to 2 threads; one thread available to label_image, i.e., must be
+# run with -t 1 as its command line parameter (see Makefile's check target).
+sgx.thread_num = 3
 
 sgx.trusted_files.ld = file:$(LIBCDIR)/ld-linux-x86-64.so.2
 sgx.trusted_files.libc = file:$(LIBCDIR)/libc.so.6
