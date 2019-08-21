@@ -33,7 +33,7 @@ def main(file=sys.stdin):
                 continue
             if line < prev:
                 print(f'bad order in line {i}: {line} (after {prev})')
-                mistakes += 1
+                mistakes = max(mistakes + 1, 255)
             prev = line
     return mistakes
 
