@@ -32,7 +32,8 @@ def count_mistakes(file):
             if not line.startswith('['):
                 continue
             if line < prev:
-                print(f'bad order in line {i}: {line} (after {prev})')
+                print('bad order in line {i}: {line} (after {prev})'.format(
+                    i=i, line=line, prev=prev))
                 mistakes += 1
             prev = line
     return mistakes
