@@ -58,6 +58,8 @@ argparser.set_defaults(
 _log = logging.getLogger()
 
 class TestRunner:
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, config):
         self.config = config
 
@@ -93,19 +95,20 @@ class TestRunner:
         timeout = self.config.getfloat(tag, 'timeout')
         _log.info('%s: starting %r with timeout %d', tag, cmd, timeout)
         start_time = time.time()
-        proc = subprocess.Popen(cmd,
+        proc = subprocess.Popen(  # pylint: disable=subprocess-popen-preexec-fn
+            cmd,
             cwd=self.bindir,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             preexec_fn=os.setsid,
             close_fds=True)
         try:
             stdout, stderr = proc.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired as e:
+        except subprocess.TimeoutExpired as err:
             _log.warning('%s: -> FAIL (timeout %d s)', tag, timeout)
-            if e.stdout is not None:
-                result.stdout = e.stdout.decode()
-            if e.stderr is not None:
-                result.stderr = e.stderr.decode()
+            if err.stdout is not None:
+                result.stdout = err.stdout.decode()
+            if err.stderr is not None:
+                result.stderr = err.stderr.decode()
             return timeout, [
                 result.error('Timed out after {} s.'.format(timeout))]
         finally:
@@ -120,7 +123,7 @@ class TestRunner:
         _log.debug('%s: finished pid=%d returncode=%d stdout=%r',
             tag, proc.pid, proc.returncode, stdout)
         if stderr:
-            _log.info('%s: stderr: %r', stderr)
+            _log.info('%s: stderr: %r', tag, stderr)
 
         result.stdout, result.stderr = stdout.decode(), stderr.decode()
         partial = list(
@@ -131,6 +134,8 @@ class TestRunner:
 
     @staticmethod
     def _parse_test_output(tag, stdout, result, xfail):
+        # pylint: disable=too-many-branches
+
         subtest = 0
         for line in stdout.split('\n'):
             _log.debug('%s: <- %r', tag, line)
@@ -221,6 +226,7 @@ class XMLReport:
         self.root = etree.Element('testsuite')
 
     def inc(self, accumulator, value=1, *, type=int, fmt=''):
+        # pylint: disable=redefined-builtin
         self.root.set(accumulator,
             format(type(self.root.get(accumulator, 0)) + value, fmt))
 
@@ -239,7 +245,10 @@ class LTPConfigParser(configparser.ConfigParser):
     # option value is set in [DEFAULT]. That's documented and expected, but not
     # what we want. We want to return the default value even for nonexistent
     # sections.
+    # pylint: disable=too-many-ancestors
+
     def get(self, section, *args, **kwds):
+        # pylint: disable=arguments-differ
         try:
             return super().get(section, *args, **kwds)
         except configparser.NoSectionError:
@@ -291,7 +300,7 @@ def main(args=None):
 
     # Running parallel tests under SGX is risky, see README. However, if user
     # wanted to do that, we shouldn't stand in the way, just issue a warning.
-    has_sgx = self.config.getboolean(config.default_section, 'sgx')
+    has_sgx = config.getboolean(config.default_section, 'sgx')
     processes = config.getint(config.default_section, 'jobs',
         fallback=(1 if has_sgx else None))
     if has_sgx and processes != 1:
