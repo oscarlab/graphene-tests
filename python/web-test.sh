@@ -4,10 +4,10 @@
 PORT=$(($$ + 1024))
 
 echo "\n\nRun a HTTP server in the background on port " + $PORT
-python scripts/dummy-web-server.py $PORT & echo $! > server.PID
+python3 scripts/dummy-web-server.py $PORT & echo $! > server.PID
 sleep 1
 echo "\n\nRun test-http.py:"
-./python.manifest scripts/test-http.py 127.0.0.1 $PORT > OUTPUT1
+./pal_loader python.manifest scripts/test-http.py 127.0.0.1 $PORT > OUTPUT1
 wget -q http://127.0.0.1:$PORT/ -O OUTPUT2
 diff -q OUTPUT1 OUTPUT2
 kill `cat server.PID`
