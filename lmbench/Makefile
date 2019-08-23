@@ -50,3 +50,4 @@ regression: all
 
 clean-lmbench:
 	$(MAKE) -C $(LMBENCHDIR) clean
+	rmdir $(LMBENCHDIR)/bin

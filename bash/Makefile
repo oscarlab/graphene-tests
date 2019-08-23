@@ -2,6 +2,7 @@ BASH_DIR = bash-4.1
 
 manifests = $(addsuffix .manifest,bash ls cp rm cat date)
 exec_target = $(manifests)
+clean-extra = clean-bash
 
 include ../../Makefile.Test
 
@@ -29,3 +30,6 @@ regression:
 distclean: clean-manifests
 	rm -rf $(bash_src)
 	rm -rf bash result $(test_targets)
+
+clean-bash:
+	rm -rf testdir/x

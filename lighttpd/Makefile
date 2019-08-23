@@ -125,4 +125,4 @@ distclean: clean
 
 .PHONY: clean-others
 clean-others:
-	rm -rf $(conf_files) $(test-data)
+	rm -rf $(conf_files) $(test-data) OUTPUT dhparam.pem server.pem result-*

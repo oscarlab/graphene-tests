@@ -126,4 +126,4 @@ distclean: clean
 	rm -rf src obj
 
 clean-garbages:
-	rm -rf cc*.s cc*.c cc*.ld cc*.le cc*.o a.out
+	rm -rf cc*.s cc*.c cc*.ld cc*.le cc*.o a.out test_files/bzip2.copy
