@@ -5,3 +5,4 @@
 pal_loader
 *.o
 *~
+*.swp
