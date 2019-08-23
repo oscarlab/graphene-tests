@@ -46,4 +46,4 @@ regression:
 
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) *.csv opt run_output syscalls.graphene
