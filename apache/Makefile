@@ -146,4 +146,4 @@ distclean: clean
 
 .PHONY: clean-apache
 clean-apache:
-	rm -rf $(test-data)
+	rm -rf $(test-data) obj result-* OUTPUT
