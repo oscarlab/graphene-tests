@@ -15,10 +15,17 @@ extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
 
 include ../../Makefile.Test
 
-.PHONY: build-lighttpd
-build-lighttpd: build/sbin/lighttpd
+LIGHTTPD-TARGETS = \
+	build/sbin/lighttpd \
+	build/sbin/lighttpd-angel \
+	build/lib/mod_indexfile.so \
+	build/lib/mod_dirlisting.so \
+	build/lib/mod_staticfile.so
 
-build/sbin/lighttpd: $(SRCDIR)
+.PHONY: build-lighttpd
+build-lighttpd: $(LIGHTTPD-TARGETS)
+
+$(LIGHTTPD-TARGETS): $(SRCDIR)
 	cd $(SRCDIR) && ./configure --prefix=$(PWD)/build \
 		--with-openssl --without-pcre --without-zlib --without-bzip2
 	$(MAKE) -C $(SRCDIR)
