@@ -4,15 +4,11 @@
 
 ################################## GRAPHENE ###################################
 
-# Executable to load into Graphene and run. Note that Graphene tries its best
-# to find the corresponding manifest file (by appending ".manifest" or
-# ".manifest.sgx") based on the executable name, and vice versa. Still, it is
-# required to have the explicit name of the executable here.
+# Executable to load into Graphene and run.
 loader.exec = file:busybox
 
-# Name of the executable e.g. as visible through argv[0].
-# Can be set to 'busybox' as below, to run any given utility: `busybox ls`
-# or to e.g. 'sh', to simply spawn a shell with `busybox`.
+# Name of the executable e.g. as visible through argv[0] when ran as manifest
+# file (`./pal_loader busybox.manifest`).
 loader.execname = busybox
 
 # LibOS layer library of Graphene. There is currently only one implementation,
@@ -36,8 +32,8 @@ loader.debug_type = $(GRAPHENEDEBUG)
 #
 # In case of Busybox:
 # - /lib is searched for Glibc libraries (ld, libc, libresolv) provided by
-#   graphene
-# - /lib/x86_64-linux-gnu is searched for libcrypt, NSS libraries
+#   graphene,
+# - /lib/x86_64-linux-gnu is searched for libcrypt, NSS libraries.
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu
 
 # Explicitly set some environment variables used by Busybox.
@@ -53,8 +49,7 @@ loader.env.HOSTNAME = test
 # - There is only one supported type of mount points: 'chroot'.
 # - Directory names are (somewhat confusingly) prepended by 'file:'.
 # - Names of mount entries (lib1, lib2) are irrelevant but must be unique.
-# - In-Graphene visible path names may be arbitrary but we reuse host-OS URIs
-#   for simplicity (except for the first 'lib1' case).
+# - In-Graphene visible path names may be arbitrary.
 
 # Mount host-OS directory containing Graphene glibc/runtime libraries
 # (specified as 'uri', GRAPHENEDIR macro is expanded in the Makefile as part
@@ -69,7 +64,7 @@ fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
 
-# Mount host-OS directory to NSS files required by Glibc + NSS libraries
+# Mount host-OS directory to NSS files required by Glibc + NSS libraries.
 fs.mount.etc.type = chroot
 fs.mount.etc.path = /etc
 fs.mount.etc.uri = file:/etc
@@ -95,6 +90,7 @@ fs.mount.etc.uri = file:/etc
 sgx.trusted_files.ld = file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2
 sgx.trusted_files.libc = file:$(GRAPHENEDIR)/Runtime/libc.so.6
 sgx.trusted_files.libresolv = file:$(GRAPHENEDIR)/Runtime/libresolv.so.2
+sgx.trusted_files.libm = file:$(GRAPHENEDIR)/Runtime/libm.so.6
 
 # libcrypt is an explicit dependency of Busybox. We choose to install it on
 # host OS instead of downloading the sources, building, and linking Busybox

@@ -16,7 +16,14 @@ make SGX=1
 
 # run Busybox shell in non-SGX Graphene
 ./pal_loader busybox sh
+# or
+./pal_loader busybox.manifest sh
 
 # run Busybox shell in Graphene-SGX
 SGX=1 ./pal_loader busybox sh
+# or
+SGX=1 ./pal_loader busybox.manifest.sgx sh
 ```
+
+Note that busybox can be started via manifest file (which contains path to
+the busybox binary). More about this can be read [here](https://github.com/oscarlab/graphene/wiki#run-an-application-in-the-graphene-library-os).

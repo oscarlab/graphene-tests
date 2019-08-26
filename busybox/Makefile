@@ -40,11 +40,14 @@ endif
 # predefined config file ".config" (just for convenience). The result of this
 # build process is the final executable "src/busybox".
 
-
-$(SRCDIR)/.config:
+$(SRCDIR)/Makefile:
 	git clone git://busybox.net/busybox.git $(SRCDIR)
 	cd $(SRCDIR) && git checkout $(COMMIT)
-	cp default.config $(SRCDIR)/.config
+
+$(SRCDIR)/.config: $(SRCDIR)/Makefile
+	cd $(SRCDIR) && make clean && make defconfig
+	sed -e 's/.*CONFIG_BUSYBOX_EXEC_PATH.*/CONFIG_BUSYBOX_EXEC_PATH="\/busybox"/' -i $(SRCDIR)/.config
+	sed -e 's/.*CONFIG_FEATURE_SH_STANDALONE.*/CONFIG_FEATURE_SH_STANDALONE=y/' -i $(SRCDIR)/.config
 
 $(SRCDIR)/busybox: $(SRCDIR)/.config
 	cd $(SRCDIR) && make
@@ -71,23 +74,23 @@ busybox.manifest: busybox.manifest.template
 # respectively. Note that filenames must be the same as the executable/manifest
 # name (i.e., "busybox").
 
-busybox.manifest.sgx: busybox.manifest $(SRCDIR)/busybox
+busybox.manifest.sgx: busybox.manifest busybox
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
 		-manifest $< -output $@ \
-		-exec $(SRCDIR)/busybox
+		-exec busybox
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output busybox.token -sig busybox.sig
 
 ########################### COPIES OF EXECUTABLES #############################
 
-# Busybox build process creates the final executable as "src/busybox". For
-# simplicity, copy it into our root directory.
-# Also, create a link to pal_loader for simplicity.
+# Busybox build process creates the final executable as "src/busybox".
+# Copy busybox binary to our root directory and create a link to pal_loader for
+# simplicity.
 
 busybox: $(SRCDIR)/busybox
-	cp $< $@
+	cp $(SRCDIR)/busybox busybox
 
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
