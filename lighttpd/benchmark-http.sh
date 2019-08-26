@@ -14,6 +14,8 @@ CONCURRENCY_LIST=${CONCURRENCY_LIST:-"1 2 4 8 16 32 64 128 256"}
 OPTIONS="-k"
 RESULT=result-$(date +%y%m%d-%H%M%S)
 
+netstat --tcp --listen --program || true
+
 touch $RESULT
 
 RUN=0
