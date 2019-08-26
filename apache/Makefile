@@ -1,4 +1,4 @@
-HOST ?= $(firstword $(shell ifconfig | grep 'inet addr:' | grep -v '127.0.0.1' -m 1 | cut -d: -f2))
+HOST ?= 127.0.0.1
 PORT ?= 8001
 
 NPROCS := 1
