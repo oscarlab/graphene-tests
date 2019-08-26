@@ -21,7 +21,7 @@ LIGHTTPD-TARGETS = \
 	build/sbin/lighttpd-angel \
 	build/lib/mod_indexfile.so \
 	build/lib/mod_dirlisting.so \
-	build/lib/mod_staticfile.so \
+	build/lib/mod_staticfile.so
 
 .PHONY: build-lighttpd
 build-lighttpd: $(LIGHTTPD-TARGETS)
