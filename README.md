@@ -14,7 +14,7 @@ If you are interested in submitting an application sample for Graphene,
 please submit a pull request to this GitHub repository.
 
 Please put your application sample in a subdirectory with a
-comprehensive name. Ideally, the subdirectory name should be the same
+comprehensible name. Ideally, the subdirectory name should be the same
 as your application. In addition, your application sample should
 have the following elements:
 
