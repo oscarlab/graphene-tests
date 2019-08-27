@@ -6,19 +6,19 @@ tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
 
 # Generating the manifest
 
-## Build for Linux
+## Building for Linux
 
 Run `make` (non-debug) or `make DEBUG=1` (debug) in the directory.
 
-## Build for SGX
+## Building for SGX
 
 Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
-## Build with a local R installation
+## Building with a local R installation
 
-By default, the `make` command build the manifest against the system R binary.
+By default, the `make` command creates the manifest against the system R binary.
 If you have a local R installation directly compiled from the source code, you
-may build the manifest with the `R_HOME` variable. For example:
+may build the manifest with the `R_HOME` variable set accordingly. For example:
 
 ```
 make R_HOME=<install path>/lib/R SGX=1
@@ -28,7 +28,7 @@ make R_HOME=<install path>/lib/R SGX=1
 
 When running R with Graphene, please use the `--vanilla` or `--no-save` option.
 
-Here's an example of running a R script into Graphene:
+Here's an example of running an R script under Graphene:
 
 Without SGX:
 ```

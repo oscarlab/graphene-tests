@@ -55,6 +55,10 @@ R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/la
 R_ALL_DEPS = $(shell $(LDD) $(R_TARGETS) | $(AWK) '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
 R_DEPS = $(filter-out $(GLIBC_DEPS),$(R_ALL_DEPS))
 
+ifeq ($(R_ALL_DEPS),)
+$(error "`$(LDD) $(R_TARGETS)` failed.")
+endif
+
 # R manifests:
 #   For each dependency, generate a rule as follows:
 #       sgx.trusted_files.xxxx = file:xxxx
