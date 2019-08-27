@@ -53,7 +53,7 @@ code or binaries, please provide the instruction in the `README.md`.
 ## Contact
 
 For any questions or bug reports, please send an email to
-<support@graphene-project.io> or port an issue in the following
+<support@graphene-project.io> or report an issue in the following
 GitHub repositories:
 
 - Graphene issues: <https://github.com/oscarlab/graphene/issues>
