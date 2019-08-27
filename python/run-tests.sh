@@ -2,9 +2,6 @@
 
 set -e
 
-echo "\n\nBuilding Python..."
-make >> /dev/null 2>&1
-
 echo "\n\nRunning helloworld.py:"
 ./pal_loader python.manifest scripts/helloworld.py > OUTPUT
 grep -q "Hello World" OUTPUT && echo "[ SUCCESS ]"

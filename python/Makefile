@@ -95,6 +95,10 @@ python.manifest.sgx: python.manifest
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
+.PHONY: test
+test: all
+	./run-tests.sh
+
 .PHONY: clean
 clean:
 	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
