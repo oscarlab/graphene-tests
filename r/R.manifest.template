@@ -90,6 +90,6 @@ sgx.allowed_files.tmp = file:/tmp
 sgx.allowed_files.r_etc = file:$(R_HOME)/etc
 sgx.allowed_files.r_lib = file:$(R_HOME)/library
 
-# Allow creating child enclaves for sh (dash)
+# Allow creating child enclaves for sh
 sgx.trusted_files.sh = file:/bin/sh
 sgx.trusted_children.sh = file:sh.sig
