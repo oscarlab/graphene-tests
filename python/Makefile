@@ -56,6 +56,10 @@ GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 PY_ALL_DEPS = $(shell $(LDD) $(PY_LIBS) | $(AWK) '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
 PY_DEPS = $(filter-out $(GLIBC_DEPS),$(PY_ALL_DEPS))
 
+ifeq ($(PY_ALL_DEPS),)
+$(error "`$(LDD) $(PY_LIBS)` failed.")
+endif
+
 # Python manifests:
 #   For each dependency, generate a rule as follows:
 #       sgx.trusted_files.xxxx = file:xxxx

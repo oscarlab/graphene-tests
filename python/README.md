@@ -1,24 +1,25 @@
-# Python 2.7 example
+# Python example
 
-This directory contains an example for running Python in Graphene, including
+This directory contains an example for running Python 2.7 in Graphene, including
 the Makefile and a template for generating the manifest. The application is
-tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
+tested on Ubuntu 16.04, with both normal Linux and SGX platforms. Python 3 is not
+yet tested in Graphene.
 
 # Generating the manifest
 
-## Build for Linux
+## Building for Linux
 
 Run `make` (non-debug) or `make DEBUG=1` (debug) in the directory.
 
-## Build for SGX
+## Building for SGX
 
 Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
-## Build with a local Python installation
+## Building with a local Python installation
 
-By default, the `make` command build the manifest against the system installation.
-If you have a local installation directly compiled from the source code, you
-may build the manifest with the `PYTHONHOME` variable. For example:
+By default, the `make` command creates the manifest against the system
+installation. If you have a local installation, you may create the manifest
+with the `PYTHONHOME` variable set accordingly. For example:
 
 ```
 make PYTHONHOME=<install path>/lib/python2.7 SGX=1
@@ -26,7 +27,7 @@ make PYTHONHOME=<install path>/lib/python2.7 SGX=1
 
 # Run Python with Graphene
 
-Here's an example of running a Python script into Graphene:
+Here's an example of running Python scripts under Graphene:
 
 Without SGX:
 ```
