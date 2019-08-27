@@ -1,53 +1,116 @@
+# Build the manifest for LMBench 2.5:
+#
+# - make
+# - make DEBUG=1
+# - make SGX=1
+# - make SGX=1 DEBUG=1
+#
+# Use `make clean` to remove Graphene-generated files.
+
+# Constants
+
+# Source code and install directory of LMBench
 LMBENCHDIR = lmbench-2.5
-LINUXDIR = $(LMBENCHDIR)/bin/linux/
+INSTALLDIR = $(LMBENCHDIR)/bin/linux
+LMBENCHCONFIG = $(INSTALLDIR)$(shell $(LMBENCHDIR)/scripts/config)
 
-host_files = /bin/sh /usr/include/x86_64-linux-gnu/sys/types.h
-lmbench_tests = $(addprefix $(LINUXDIR),lat_syscall lat_connect lat_fcntl \
-		lat_select lat_fs lat_mmap lat_fifo lat_mem_rd lat_msg \
-		lat_tcp lat_udp lat_unix_connect lat_pagefault \
-		bw_tcp bw_mem bw_unix lat_proc lat_ctx lat_rpc \
-		lat_unix lat_sig lat_http lat_pipe \
-		bw_pipe bw_file_rd bw_mmap_rd lmhttp lmdd)
-manifests = $(addprefix $(LINUXDIR),$(patsubst %.template,%,$(wildcard *.manifest.template)) manifest)
+# Relative path to Graphene root
+GRAPHENEDIR ?= ../../../../..
 
-target = $(lmbench_tests)
-clean-extra = clean-lmbench
+# If GRAPHENEDIR is a relative path, extend the path from where LMBench is installed
+ifeq ($(patsubst /%,,$(GRAPHENEDIR)),)
+GRAPHENEDIR_FROM_INSTALLDIR = $(GRAPHENEDIR)
+else
+GRAPHENEDIR_FROM_INSTALLDIR = ../../../$(GRAPHENEDIR)
+endif
 
-level = ../../
-include ../../Makefile
+ifeq ($(DEBUG),1)
+GRAPHENEDEBUG = inline
+else
+GRAPHENEDEBUG = none
+endif
+
+MANIFESTS = $(INSTALLDIR)/manifest $(INSTALLDIR)/hello.manifest $(INSTALLDIR)/sh.manifest
+
+.PHONY: all
+all: $(INSTALLDIR) $(MANIFESTS) $(INSTALLDIR)/pal_loader
+ifeq ($(SGX),1)
+all: sgx
+endif
 
 export CC
 export CFLAGS
 
-$(LINUXDIR)Makefile: Makefile.lmbench
-	ln -sf ../../../$< $@
+# Building LMBench 2.5
 
-build-manifest: $(LINUXDIR) $(LINUXDIR)Makefile
-	$(MAKE) -C $(LINUXDIR)
-
-$(lmbench_tests): $(LINUXDIR) build-manifest
-
-$(LINUXDIR): $(wildcard $(LMBENCHDIR)/src/*.c) $(wildcard $(LMBENCHDIR)/src/*.h)
+$(INSTALLDIR):
 	$(MAKE) -C $(LMBENCHDIR)/src OS=linux
 
-lmbench_config = $(LINUXDIR)$(shell $(LMBENCHDIR)/scripts/config)
+$(INSTALLDIR)/lmbench-test-ci:
+	cp lmbench-test-ci $@
 
-$(lmbench_config):
+# Generating the manifests
+
+$(MANIFESTS): $(INSTALLDIR)/%: %.template $(INSTALLDIR)
+	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR_FROM_INSTALLDIR)"'|g' \
+		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
+		$< > $@
+
+# Generating the manifests for SGX
+#
+# For each program in LMBench, we need to generate the manifest
+# individually, along with the signature and the inittoken.
+#
+# The 'sgx' rule below will list the executables in $(INSTALLDIR)
+# and generate their manifests for SGX.
+
+.PHONY: sgx
+sgx: $(INSTALLDIR) $(INSTALLDIR)/sh.manifest.sgx $(INSTALLDIR)/hello.manifest.sgx
+	cd $(INSTALLDIR) && \
+	for f in `find -executable -not -name . -not -name lmbench -not -name hello`; do \
+		if [ ! -f $$f.manifest.sgx ]; then \
+			$(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+				-libpal $(GRAPHENEDIR_FROM_INSTALLDIR)/Runtime/libpal-Linux-SGX.so \
+				-key $(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+				-manifest manifest -output $$f.manifest.sgx && \
+			$(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
+				-output $$f.token -sig $$f.sig; \
+		fi; \
+	done
+
+$(INSTALLDIR)/sh.manifest.sgx $(INSTALLDIR)/hello.manifest.sgx: %.sgx: %
+	cd $(INSTALLDIR) && \
+	$(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+		-libpal $(GRAPHENEDIR_FROM_INSTALLDIR)/Runtime/libpal-Linux-SGX.so \
+		-key $(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-manifest $(abspath $<) -output $(abspath $@) && \
+	$(GRAPHENEDIR_FROM_INSTALLDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
+		-output $(abspath $(basename $<).token) -sig $(abspath $(basename $<).sig)
+
+# Running LMBench natively and under Graphene
+#
+# - make run-native:   run the whole test suite natively (with configuration)
+# - make run-graphene: run the whole test suite under Graphene (with configuration)
+# - make test:         run LMBench for CI (without configuration)
+
+$(LMBENCHCONFIG):
 	cd $(LMBENCHDIR)/scripts && env OS=linux ./config-run
 
-test-native: $(lmbench_tests) $(lmbench_config)
+.PHONY: run-native
+run-native: all $(LMBENCHCONFIG)
 	cd $(LMBENCHDIR)/scripts && env OS=linux ./results
 
-test-graphene: all $(lmbench_config)
-	cd $(LMBENCHDIR)/scripts && \
-		env LOADER=./pal_loader OS=linux RESULTS=results/graphene \
-		./results
+.PHONY: run-graphene
+run-graphene: all $(LMBENCHCONFIG)
+	cd $(LMBENCHDIR)/scripts && env LOADER=./pal_loader OS=linux RESULTS=results/graphene ./results
 
-regression: all
-	cp -f $(LMBENCHDIR)/lmbench-regression $(LMBENCHDIR)/bin/linux
-	cd $(LMBENCHDIR)/bin/linux && \
-		env LOADER=./pal_loader OS=linux \
-		./lmbench-regression
+.PHONY: test
+test: all $(INSTALLDIR)/lmbench-test-ci
+	cd $(INSTALLDIR) && env LOADER=./pal_loader OS=linux ./lmbench-test-ci
 
-clean-lmbench:
+$(INSTALLDIR)/pal_loader:
+	ln -s $(GRAPHENEDIR_FROM_INSTALLDIR)/Runtime/pal_loader $@
+
+.PHONY: clean
+clean:
 	$(MAKE) -C $(LMBENCHDIR) clean
