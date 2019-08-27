@@ -7,8 +7,8 @@
 # ./pal_loader python.manifest <script>
 
 # The executable to load in Graphene. By default, $(PYTHONHOME) points to the
-# system installation. To run a locally-install Python, specify PYTHONHOME when
-# running `make` in this directory.
+# system installation. To run a locally-installed Python, specify PYTHONHOME
+# when running `make` in this directory.
 loader.exec = file:$(PYTHONEXEC)
 
 # Graphene environment, including the path of the library OS and the debug

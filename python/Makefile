@@ -95,29 +95,6 @@ python.manifest.sgx: python.manifest
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
-regression:
-	@echo "\n\nBuilding Python..."
-	@$(MAKE) >> /dev/null 2>&1
-
-	@echo "\n\nRun helloworld.py:"
-	./pal_loader python.manifest scripts/helloworld.py > OUTPUT
-	$(GREP) -q "Hello World" OUTPUT
-	@$(RM) OUTPUT
-
-	@echo "\n\nRun fibonacci.py:"
-	./pal_loader python.manifest scripts/fibonacci.py  > OUTPUT
-	$(GREP) -q "fib2              55" OUTPUT
-	@$(RM) -f OUTPUT
-
-	@echo "\n\nRun test-numpy.py:"
-	./pal_loader python.manifest scripts/test-numpy.py
-
-	@echo "\n\nRun test-scipy.py:"
-	./pal_loader python.manifest scripts/test-scipy.py
-
-	./web-test.sh
-
-# Clean up
 .PHONY: clean
 clean:
 	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
