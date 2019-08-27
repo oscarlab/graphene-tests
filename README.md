@@ -20,25 +20,25 @@ have the following elements:
 
 - `README.md`:
   Please document the tested environment and the instruction for
-  building and running the application in a `README.md` file.
-  If your application sample has any known issue or requirement,
-  please specify in the documentation.
+  building and running the application. If your application sample
+  has any known issue or requirement, please also specify in the
+  documentation.
 
 - `Makefile`:
-    Users should be able to build your application sample by running
+  Users should be able to build your application sample by running
   the `make` command. If your application needs extra building steps,
-  please also document them in the `README.md`. In addition. we ask you
+  please document them in the `README.md`. In addition. we ask you
   to provide sufficient comments in the `Makefile` to help users
-  understand the building process better.
+  understand the building process.
 
 - Manifest(s):
-  Please provide the manifest(s) needed for running your application
-  sample. Please do not hard-code any user-specific path or personal
-  information in the manifest. The ideal way is to create a manifest
-  template that contains variables to be replaced by the `Makefile`.
+  Please provide all the manifests needed for running your application
+  sample. Do not hard-code any user-specific path or personal info
+  in the manifests. The ideal way is to create manifest templates that
+  contains variables to be replaced with runtime options in `Makefile`.
   See other subdirectories for examples of the manifest templates.
   We also ask you to provide sufficient comments in all the manifests
-  to help users understand the environment better.
+  to help users understand the environment.
 
 - Sample inputs and test suites:
   If you have any inputs and test suites for testing the application,
