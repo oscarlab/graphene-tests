@@ -48,7 +48,7 @@ AWK  = awk
 RM   = rm
 
 .PHONY: all
-all: $(INSTALL_DIR)/bin/httpd httpd.manifest pal_loader
+all: $(INSTALL_DIR)/bin/httpd httpd.manifest $(INSTALL_DIR)/conf/httpd-new.conf pal_loader
 ifeq ($(SGX),1)
 all: httpd.manifest.sgx
 endif
@@ -217,7 +217,7 @@ clean-server:
 	rm -f $(INSTALL_DIR)/logs/httpd-$(HOST)-$(PORT).pid
 
 .PHONY: start-native-server
-start-native-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-server
+start-native-server: all $(TEST_DATA) clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND \
 		-f conf/httpd-new.conf \
@@ -227,7 +227,7 @@ start-native-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-serve
 		-C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
 
 .PHONY: start-graphene-server
-start-graphene-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-server
+start-graphene-server: all $(TEST_DATA) clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) ./pal_loader httpd.manifest -D FOREGROUND \
 		-f conf/httpd-new.conf \
@@ -237,7 +237,7 @@ start-graphene-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-ser
 		-C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
 
 .PHONY: start-native-multithreaded-server
-start-native-multithreaded-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-server
+start-native-multithreaded-server: all $(TEST_DATA) clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND \
 		-f conf/httpd-new.conf \
@@ -247,7 +247,7 @@ start-native-multithreaded-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DAT
 		-C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
 
 .PHONY: start-graphene-multithreaded-server
-start-graphene-multithreaded-server: $(INSTALL_DIR)/conf/httpd-new.conf $(TEST_DATA) clean-server
+start-graphene-multithreaded-server: all $(TEST_DATA) clean-server
 	@echo "Listen on $(HOST):$(PORT)"
 	$(PREFIX) ./pal_loader httpd.manifest -D FOREGROUND \
 		-f conf/httpd-new.conf \
