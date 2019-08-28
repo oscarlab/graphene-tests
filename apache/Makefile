@@ -1,148 +1,271 @@
-HOST ?= 127.0.0.1
-PORT ?= 8001
+# Build the manifest for Apache (httpd):
+#
+# - make                  Building for Linux
+# - make DEBUG=1          Building for Linux, with Graphene debug output
+# - make SGX=1            Building for SGX
+# - make SGX=1 DEBUG=1    Building for SGX
+#
+# Use `make clean` to remove Graphene-generated files.
+#
+# Use `make distclean` to further remove the Apache tarball, source code,
+# and installation.
 
-NPROCS := 1
-OS := $(shell uname -s)
-ifeq ($(OS),Linux)
-	NPROCS := $(shell nproc)
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+ifeq ($(THIS_DIR), ./)   # to workaround the Graphene bug with allowed_files' paths
+THIS_DIR :=
 endif
 
-PREFORK_WORKERS := $(shell expr $(NPROCS) + 1)
+INSTALL_DIR ?= $(THIS_DIR)install
+HTTPD_SRC ?= $(THIS_DIR)httpd-2.4.41
+HTTPD_CHECKSUM ?= 3c0f9663240beb0f008acf3b4501c4f339d7467ee345a36c86c46b4d6f3a5461
 
-HTTPD_DIR = httpd-2.4.3
-APR_DIR = apr-1.4.6
-APRUTIL_DIR = apr-util-1.5.1
-PHP_DIR = php-5.6.6
+# Mirros for downloading the Apache source code
+HTTPD_MIRRORS ?= \
+	https://www-eu.apache.org/dist/ \
+	https://www-us.apache.org/dist/ \
+	https://ftp.fau.de/apache/ \
+	https://archive.apache.org/dist/
 
-INSTALL_DIR = $(PWD)/obj
-SRC_DIRS = $(HTTPD_DIR) $(APR_DIR) $(APRUTIL_DIR) $(PHP_DIR)
-HTDOC=$(INSTALL_DIR)/htdocs
+# Address and port for the Apache server to listen
+LISTEN_HOST ?= 127.0.0.1
+LISTEN_PORT ?= 8001
 
-exec_target = httpd.manifest
-
-target = build-apache build-conf test-data
-
-clean-extra = clean-apache
-
-extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
-
-include ../../Makefile.Test
-
-.PHONY: build-apache
-build-apache: $(INSTALL_DIR)/bin/httpd $(INSTALL_DIR)/modules/libphp5.so
+# Relative path to Graphene root
+GRAPHENEDIR ?= $(THIS_DIR)../../../../..
 
 ifeq ($(DEBUG),1)
-MAKE_FLAGS = CC="gcc -g"
-APXS_FLAGS = -S CC="gcc -g"
+GRAPHENEDEBUG = inline
+else
+GRAPHENEDEBUG = none
 endif
 
-%: %.tar.gz
-	tar -xmzf $<
+.PHONY: all
+all: $(INSTALL_DIR)/bin/httpd httpd.manifest pal_loader config testdata
+ifeq ($(SGX),1)
+all: httpd.manifest.sgx httpd.sig httpd.token
+endif
 
-%: %.tar.bz2
-	tar -xmjf $<
+# The make targets for downloading and compiling the Apache source code, and
+# installing the binaries.
 
-$(INSTALL_DIR)/lib/libapr-1.so.0: $(APR_DIR)
-	#cd $< && patch -p1 < ../disable-epoll.patch
-	cd $< && ./configure --prefix=$(INSTALL_DIR)
-	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
-	cd $< && $(MAKE) install
+$(INSTALL_DIR)/bin/httpd: $(HTTPD_SRC)/configure
+	cd $(HTTPD_SRC) && ./configure --prefix=$(abspath $(INSTALL_DIR)) \
+		--with-mpm=prefork --enable-mpms-shared='prefork worker event'
+	cd $(HTTPD_SRC) && $(MAKE)
+	cd $(HTTPD_SRC) && $(MAKE) install
 
-$(INSTALL_DIR)/lib/libaprutil-1.so.0: $(APRUTIL_DIR) $(INSTALL_DIR)/lib/libapr-1.so.0
-	cd $< && ./configure --prefix=$(INSTALL_DIR) --with-apr=$(INSTALL_DIR)
-	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
-	cd $< && $(MAKE) install
+$(HTTPD_SRC)/configure: $(HTTPD_SRC).tar.gz
+	tar -mxzf $<
 
-$(INSTALL_DIR)/bin/httpd $(INSTALL_DIR)/bin/apxs: $(INSTALL_DIR)/lib/libapr-1.so.0 $(INSTALL_DIR)/lib/libaprutil-1.so.0
-	[ -d $(HTTPD_DIR) ] || tar -xzf $(HTTPD_DIR).tar.gz
-	[ -f $(HTTPD_DIR)/Makefile ] || ( \
-	cd $(HTTPD_DIR) && ./configure --prefix=$(INSTALL_DIR) --with-apr=$(INSTALL_DIR) \
-	--with-apr-util=$(INSTALL_DIR) --with-mpm=prefork)
-	cd $(HTTPD_DIR) && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
-	cd $(HTTPD_DIR) && $(MAKE) install
+$(HTTPD_SRC).tar.gz:
+	for MIRROR in $(HTTPD_MIRRORS); do \
+		wget --timeout=10 $${MIRROR}httpd/$(HTTPD_SRC).tar.gz -O tmp \
+		&& break; \
+	done
+	@[ "`sha256sum tmp`" = "$(HTTPD_CHECKSUM)  tmp" ] || \
+		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
+	mv -f tmp $@
 
-$(INSTALL_DIR)/modules/libphp5.so: $(PHP_DIR) $(INSTALL_DIR)/bin/apxs
-	cd $< && ./configure --prefix=$(INSTALL_DIR) --with-apxs2=$(INSTALL_DIR)/bin/apxs \
-	--disable-cgi --disable-cli --disable-soap
-	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
-	cd $< && $(MAKE) install
+# Apache dependencies (generate from ldd):
+#
+# For SGX, the manifest needs to list all the libraries loaded during the
+# execution, so that the signer can include the file checksums.
+#
+# The dependencies are generated from the ldd results.
 
-.PHONY: build-conf
-build-conf:
-	[ -f $(INSTALL_DIR)/conf/httpd.conf.old ] || \
-		mv $(INSTALL_DIR)/conf/httpd.conf $(INSTALL_DIR)/conf/httpd.conf.old
-	sed -e "s/Listen 80/#Listen 80/g" \
-	    -e "s/User daemon/#User root/g" \
-	    -e "s/Group daemon/#Group root/g" \
-	    -e "s/#EnableMMAP off/EnableMMAP off/g" \
-	    -e "s/#EnableSendfile on/EnableSendfile on/g" \
-	    -e "s/DirectoryIndex index.html/DirectoryIndex index.html index.php/g" \
-	    -e "s/^[ ]*CustomLog/#CustomLog/g" \
-	$(INSTALL_DIR)/conf/httpd.conf.old > $(INSTALL_DIR)/conf/httpd.conf.new
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
+GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
+
+$(INSTALL_DIR)/conf/httpd.conf: $(INSTALL_DIR)
+
+# Listing all the enabled modules in Apache, by greping httpd.conf
+.INTERMEDIATE: httpd-modules
+httpd-modules: $(INSTALL_DIR)/conf/httpd.conf
+	@grep "^LoadModule" $(INSTALL_DIR)/conf/httpd.conf | \
+		awk '{print "$(INSTALL_DIR)/" $$3}' > $@
+	@echo $(INSTALL_DIR)/modules/mod_mpm_worker.so >> $@
+	@echo $(INSTALL_DIR)/modules/mod_mpm_event.so  >> $@
+
+# Listing all the Apache dependencies, besides Glibc libraries
+.INTERMEDIATE: httpd-ldd
+httpd-ldd: httpd-modules
+	@for F in $(INSTALL_DIR)/bin/httpd `cat httpd-modules`; do \
+		ldd $$F >> $@ || exit 1; done
+
+.INTERMEDIATE: httpd-deps
+httpd-deps: httpd-ldd
+	@cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
+
+# Generating manifest rules for Apache modules
+.INTERMEDIATE: httpd-trusted-mods
+httpd-trusted-mods: httpd-modules
+	@for F in `cat httpd-modules`; do \
+		N=`echo $$F | awk '{n=split($$1,s,/\/|\./); print s[n-1]}'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$F\\\\n"; \
+	done > $@
+
+# Generating manifest rules for Apache dependencies
+.INTERMEDIATE: httpd-trusted-libs
+httpd-trusted-libs: httpd-deps httpd-modules
+	@HTTPD_LIBS="$(INSTALL_DIR)/bin/httpd `cat httpd-modules`" && \
+	for F in `cat httpd-deps`; do \
+		P=`ldd $$HTTPD_LIBS | grep $$F | awk '{print $$3; exit}'`; \
+		N=`echo $$F | tr --delete '-'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
+	done > $@
+
+httpd.manifest: httpd.manifest.template httpd-trusted-mods httpd-trusted-libs
+	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
+		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
+		-e 's|$$(INSTALL_DIR)|'"$(INSTALL_DIR)"'|g' \
+		-e 's|$$(INSTALL_DIR_ABSPATH)|'"$(abspath $(INSTALL_DIR))"'|g' \
+		-e 's|$$(HTTPD_TRUSTED_MODS)|'"`cat httpd-trusted-mods`"'|g' \
+		-e 's|$$(HTTPD_TRUSTED_LIBS)|'"`cat httpd-trusted-libs`"'|g' \
+		$< > $@
+
+# Generating the SGX-specific manifest (httpd.manifest.sgx), the enclave signature,
+# and the token for enclave initialization.
+httpd.manifest.sgx: httpd.manifest
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-manifest $< -output $@
+
+httpd.sig: httpd.manifest.sgx
+
+httpd.token: httpd.sig
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
+		-output httpd.token -sig httpd.sig
+
+# Extra executables
+pal_loader:
+	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
+# Apache configuration and test data
+#
+# The following changes are made in httpd.conf (copied as httpd-graphene.conf):
+# - Remove "Listen ..." (Use a command-line option instead)
+# - Remove "User ..." and "Group ..."
+# - Comment "LoadModule mpm_prefork_module ...." (Use a command-line option instead)
+# - Uncomment "EnableMMAP off"
+# - Uncomment "EnableSendfile on"
+# - Add configuration for the Prefork and Worker MPMs
+
+.PHONY: config
+config: $(INSTALL_DIR)/conf/httpd-graphene.conf
+
+$(INSTALL_DIR)/conf/httpd-graphene.conf: $(INSTALL_DIR)/conf/httpd.conf
+	sed -e "s|^Listen |#Listen |g" \
+		-e "s|^User |#User |g" \
+		-e "s|^Group |#Group |g" \
+		-e "s|^LoadModule mpm_prefork|#LoadModule mpm_prefork|g" \
+		-e "s|#EnableMMAP off|EnableMMAP off|g" \
+		-e "s|#EnableSendfile on|EnableSendfile on|g" \
+	$< > $@
 	echo "\n\
 <IfModule mpm_prefork_module>\n\
-    StartServers             $(PREFORK_WORKERS)\n\
+    StartServers             4\n\
     MinSpareServers          1\n\
-    MaxSpareServers          $(PREFORK_WORKERS)\n\
+    MaxSpareServers          4\n\
     MaxConnectionsPerChild   0\n\
-</IfModule>\n" >> $(INSTALL_DIR)/conf/httpd.conf.new
+</IfModule>\n" >> $@
 	echo "\n\
-<IfModule mime_module>\n\
-    AddType application/x-httpd-php .php\n\
-</IfModule>\n" >> $(INSTALL_DIR)/conf/httpd.conf.new
-	cd $(INSTALL_DIR)/conf && ln -sf httpd.conf.new httpd.conf
+<IfModule mpm_worker_module>\n\
+    StartServers             1\n\
+    MinSpareThreads          25\n\
+    MaxSpareThreads          75\n\
+    ThreadsPerChild          25\n\
+</IfModule>\n" >> $@
+
+# HTTP docs:
+# Generating random HTML files in $(INSTALL_DIR)/htdocs/random
+
+RANDOM_DIR = $(INSTALL_DIR)/htdocs/random
+RANDOM_FILES = \
+	$(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
+	$(foreach n,1 2 3 4 5,10K.$n.html) \
+	$(foreach n,1 2 3 4 5,100K.$n.html) \
+	$(foreach n,1 2 3,1M.$n.html) \
+	$(foreach n,1 2 3,10M.$n.html) \
+	$(foreach n,1 2 3,100.$n.html)
+
+TEST_DATA = $(addprefix $(RANDOM_DIR)/,$(RANDOM_FILES))
+
+$(RANDOM_DIR)/%.html:
+	mkdir -p $(RANDOM_DIR)
+	dd if=/dev/urandom of=$@ count=1 bs=$(basename $(basename $(notdir $@)))
+
+.PHONY: testdata
+testdata: $(TEST_DATA)
+
+# Commands for running Apache
+#
+# - make start-native-server:
+#     Start the Apache server natively in the foreground (using the Prefork MPM)
+#
+# - make start-graphene-server:
+#     Start the Apache server under Graphene in the foreground (using the Prefork MPM)
+#
+# - make start-native-multithreaded-server:
+#     Start the Apache server natively in the foreground (using the Worker MPM)
+#
+# - make start-graphene-multithreaded-server:
+#     Start the Apache server under Graphene in the foreground (using the Worker MPM)
+#
+# - make clean-server:
+#      Clean up the PID files generated by Apache
 
 .PHONY: clean-server
 clean-server:
-	rm -f $(INSTALL_DIR)/logs/httpd-$(HOST)-$(PORT).pid
+	$(RM) $(INSTALL_DIR)/logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid
 
 .PHONY: start-native-server
-start-native-server: clean-server
-	@echo "Listen on $(HOST):$(PORT)"
-	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
+start-native-server: all clean-server
+	@echo "Listen on $(LISTEN_HOST):$(LISTEN_PORT)"
+	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND \
+		-f conf/httpd-graphene.conf \
+		-C "LoadModule mpm_prefork_module modules/mod_mpm_prefork.so" \
+		-C "Listen $(LISTEN_HOST):$(LISTEN_PORT)" \
+		-C "ServerName $(LISTEN_HOST)" \
+		-C "PidFile logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid"
 
 .PHONY: start-graphene-server
-start-graphene-server: clean-server
-	@echo "Listen on $(HOST):$(PORT)"
-	$(PREFIX) ./httpd.manifest -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
+start-graphene-server: all clean-server
+	@echo "Listen on $(LISTEN_HOST):$(LISTEN_PORT)"
+	$(PREFIX) ./pal_loader httpd.manifest -D FOREGROUND \
+		-f conf/httpd-graphene.conf \
+		-C "LoadModule mpm_prefork_module modules/mod_mpm_prefork.so" \
+		-C "Listen $(LISTEN_HOST):$(LISTEN_PORT)" \
+		-C "ServerName $(LISTEN_HOST)" \
+		-C "PidFile logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid"
 
-random-data = $(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
-	      $(foreach n,1 2 3 4 5,10K.$n.html) \
-	      $(foreach n,1 2 3 4 5,100K.$n.html) \
-	      $(foreach n,1 2 3,1M.$n.html) \
-	      $(foreach n,1 2 3,10M.$n.html) \
-	      $(foreach n,1 2 3,100.$n.html)
+.PHONY: start-native-multithreaded-server
+start-native-multithreaded-server: all clean-server
+	@echo "Listen on $(LISTEN_HOST):$(LISTEN_PORT)"
+	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND \
+		-f conf/httpd-graphene.conf \
+		-C "LoadModule mpm_worker_module modules/mod_mpm_worker.so" \
+		-C "Listen $(LISTEN_HOST):$(LISTEN_PORT)" \
+		-C "ServerName $(LISTEN_HOST)" \
+		-C "PidFile logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid"
 
-test-data = $(addprefix $(HTDOC)/random/,$(random-data)) \
-	    $(HTDOC)/auth/secret.html $(HTDOC)/auth/.htaccess
+.PHONY: start-graphene-multithreaded-server
+start-graphene-multithreaded-server: all clean-server
+	@echo "Listen on $(LISTEN_HOST):$(LISTEN_PORT)"
+	$(PREFIX) ./pal_loader httpd.manifest -D FOREGROUND \
+		-f conf/httpd-graphene.conf \
+		-C "LoadModule mpm_worker_module modules/mod_mpm_worker.so" \
+		-C "Listen $(LISTEN_HOST):$(LISTEN_PORT)" \
+		-C "ServerName $(LISTEN_HOST)" \
+		-C "PidFile logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid"
 
-$(HTDOC)/random/%.html:
-	[ -d $(HTDOC)/random ] || mkdir -p $(HTDOC)/random
-	dd if=/dev/urandom of=$@ count=1 bs=$(basename $(basename $(notdir $@)))
-
-$(HTDOC)/auth:
-	mkdir -p $@
-
-$(HTDOC)/auth/secret.html: $(HTDOC)/auth
-	echo "This is the secret" > $@
-
-$(HTDOC)/auth/.htpasswd: $(INSTALL_DIR)/bin/htpasswd $(HTDOC)/auth
-	$< -b -c $@ test test
-
-$(HTDOC)/auth/.htaccess: $(HTDOC)/auth/.htpasswd
-	echo "AuthName \"Login\"\n\
-AuthType Basic\n\
-AuthUserFile $(HTDOC)/auth/.htpasswd\n\
-AuthGroupFile /dev/null\n\
-require user test" > $@
-
-.PHONY: test-data
-test-data: $(test-data)
+.PHONY: clean
+clean:
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* httpd-ldd httpd-modules tmp
 
 .PHONY: distclean
 distclean: clean
-	rm -rf $(INSTALL_DIR) $(SRC_DIRS)
-
-.PHONY: clean-apache
-clean-apache:
-	rm -rf $(test-data)
+	$(RM) -r $(HTTPD_SRC).tar.gz $(HTTPD_SRC) $(INSTALL_DIR)
