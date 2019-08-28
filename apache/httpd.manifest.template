@@ -15,7 +15,7 @@ loader.execname = httpd
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENEDEBUG)
 
-# Environment variables for Python
+# Environment variables
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu
 
 # Mounted FSes. The following "chroot" FSes mount a part of the host FS into the
