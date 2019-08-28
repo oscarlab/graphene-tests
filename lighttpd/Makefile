@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 manifests = lighttpd.manifest lighttpd-angel.manifest
 SRCDIR = lighttpd-1.4.30
 HOST = 127.0.0.1

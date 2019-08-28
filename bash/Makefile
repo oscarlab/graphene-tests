@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 BASH_DIR = bash-4.1
 
 manifests = $(addsuffix .manifest,bash ls cp rm cat date)

@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 PYTHON_SRC = Python-2.7.9
 PYTHON_INSTALL = $(PYTHON_SRC)/build
 

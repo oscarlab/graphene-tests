@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 LMBENCHDIR = lmbench-2.5
 LINUXDIR = $(LMBENCHDIR)/bin/linux/
 

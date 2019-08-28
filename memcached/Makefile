@@ -15,6 +15,8 @@
 # Relative path to Graphene root
 GRAPHENEDIR = ../../../../..
 
+include $(GRAPHENEDIR)/build-config.mk
+
 SRCDIR = src
 COMMIT = master
 
