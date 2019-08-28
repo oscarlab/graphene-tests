@@ -1,8 +1,8 @@
-/ab.*
 /result-*
 /OUTPUT
-/build/
+/install/
 /lighttpd.conf
 /lighttpd-*/
-/server.pem
-/dhparam.pem
+/*.conf
+!/lighttpd-generic.conf
+/*.tar.gz
