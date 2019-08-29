@@ -1,14 +1,14 @@
 # Bash manifest example
 #
-# This is a general manifest templatefor running Bash and core utility programs,
+# This is a general manifest template for running Bash and core utility programs,
 # including ls, cat, cp, and rm.
 #
 # This manifest was prepared and tested on Ubuntu 16.04.
 
-# The executable to load in Graphene. By default, $(PYTHONHOME) points to the
-# system installation. To run a locally-installed Python, specify PYTHONHOME
-# when running `make` in this directory.
+# The executable to load in Graphene. We replace the $(EXECPATH) variable for
+# each program that a manifest is generated for.
 loader.exec = file:$(EXECPATH)
+# The executable name to be given as the first argument to the program
 loader.execname = file:$(EXECNAME)
 
 # Graphene environment, including the path of the library OS and the debug
@@ -16,7 +16,7 @@ loader.execname = file:$(EXECNAME)
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENEDEBUG)
 
-# Environment variables for Python
+# Environment variables
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu
 loader.env.PATH = /bin:/usr/bin
 loader.env.USERNAME = root
@@ -30,7 +30,7 @@ fs.mount.lib.type = chroot
 fs.mount.lib.path = /lib
 fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime
 
-# Host-level libraries (/lib/x86_64-linux-gnu) required by the Python executable
+# Host-level libraries (/lib/x86_64-linux-gnu) required by Bash
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
