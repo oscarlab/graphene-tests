@@ -1,8 +1,6 @@
-/httpd-2.4.3/*
+/httpd-*/*
+/*.tar.gz
+/install/*
 /result-*
-/obj/*
+/*.html*
 /OUTPUT
-/.libs/*
-/apr-1.4.6/*
-/apr-util-1.5.1/*
-/php-5.6.6/*

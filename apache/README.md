@@ -7,14 +7,12 @@ platforms.
 
 # Installing from the Apache source code
 
-In this example, we build Apache from the source code instead use an existing
-installation. To build Apache on Ubuntu 16.04, please make sure that the
-following packages are properly installed:
+In this example, we build Apache from the source code instead of using an
+existing installation. To build Apache on Ubuntu 16.04, please make sure that
+the following packages are properly installed:
 
-    sudo apt-get install -y build-essential libapr1-dev libaprutil1-dev libpcre2-dev apache2-utils
-
-After installing the packages, run `make` (non-debug) or `make DEBUG=1` (debug)
-in the directory to build and install Apache.
+    sudo apt-get install -y build-essential flex \
+            libapr1-dev libaprutil1-dev libpcre2-dev apache2-utils
 
 # Generating the manifest
 
@@ -48,7 +46,7 @@ Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `ApacheUtil`:
+You may also run the benchmark using `ab` from `apache-utils`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
