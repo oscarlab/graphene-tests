@@ -75,7 +75,9 @@ $(HTTPD_SRC).tar.gz:
 #
 # The dependencies are generated from the ldd results.
 
-# Skip the GLIBC libraries because they are already listed
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
 GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
 $(INSTALL_DIR)/conf/httpd.conf: $(INSTALL_DIR)

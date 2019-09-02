@@ -72,7 +72,7 @@ Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `ApacheUtil`:
+You may also run the benchmark using `ab` from `apache-utils`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
@@ -103,7 +103,7 @@ Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `ApacheUtil`:
+You may also run the benchmark using `ab` from `apache-utils`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
