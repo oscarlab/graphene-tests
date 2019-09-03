@@ -28,7 +28,7 @@ export LD_LIBRARY_PATH
 .PHONY: all
 all: R.manifest sh.manifest pal_loader
 ifeq ($(SGX),1)
-all: R.manifest.sgx sh.manifest.sgx
+all: R.manifest.sgx R.sig R.token sh.manifest.sgx sh.sig sh.token
 endif
 
 # R dependencies (generate from ldd):
@@ -97,6 +97,10 @@ R.manifest.sgx: R.manifest sh.manifest.sgx
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
 		-manifest $< -output $@
+
+R.sig: R.manifest.sgx
+
+R.token: R.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output R.token -sig R.sig
 
@@ -106,6 +110,10 @@ sh.manifest.sgx: sh.manifest
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
 		-manifest $< -output $@
+
+sh.sig: sh.manifest.sgx
+
+sh.token: sh.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output sh.token -sig sh.sig
 
