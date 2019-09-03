@@ -118,4 +118,4 @@ test: all
 
 .PHONY: clean
 clean:
-	rm -f *.manifest *.manifest.sgx *.token *.sig pal_loader
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
