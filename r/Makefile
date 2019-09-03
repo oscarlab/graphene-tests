@@ -9,9 +9,6 @@
 
 # Constants
 
-# Needs bash for special features such as returning exit status from a pipe
-SHELL := /bin/bash
-
 # Installation location of R. By default, Graphene will run the system R executable.
 R_HOME ?= /usr/lib/R
 R_EXEC = $(R_HOME)/bin/exec/R
@@ -53,12 +50,14 @@ GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/lapack.so
 
 # Listing all the R dependencies, besides Glibc libraries
+.INTERMEDIATE: R-ldd
+R-ldd:
+	@for F in $(R_TARGETS); do ldd $$F >> $@ || exit 1; done
+
 .INTERMEDIATE: R-deps
-R-deps:
-	@for F in $(R_TARGETS); do ldd $$F || exit 1; done \
-		| awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
-		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@; \
-	exit $${PIPESTATUS[0]}
+R-deps: R-ldd
+	@cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
 # Generating manifest rules for R dependencies
 .INTERMEDIATE: R-trusted-libs
@@ -115,7 +114,6 @@ sh.sig: sh.manifest.sgx
 sh.token: sh.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output sh.token -sig sh.sig
-
 
 # Extra executables
 pal_loader:
