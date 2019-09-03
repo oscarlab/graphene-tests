@@ -25,8 +25,8 @@ HTTPD_MIRRORS ?= \
 	https://archive.apache.org/dist/
 
 # Address and port for the Apache server to listen
-LISTEN_LISTEN_HOST ?= 127.0.0.1
-LISTEN_LISTEN_PORT ?= 8001
+LISTEN_HOST ?= 127.0.0.1
+LISTEN_PORT ?= 8001
 
 # Number of the preforked workers in Apache
 PREFORK_WORKERS := 4
@@ -67,7 +67,6 @@ $(HTTPD_SRC).tar.gz:
 		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
 	mv -f tmp $@
 
-
 # Apache dependencies (generate from ldd):
 #
 # For SGX, the manifest needs to list all the libraries loaded during the
@@ -91,11 +90,15 @@ httpd-modules: $(INSTALL_DIR)/conf/httpd.conf
 	@echo $(INSTALL_DIR)/modules/mod_mpm_event.so  >> $@
 
 # Listing all the Apache dependencies, besides Glibc libraries
+.INTERMEDIATE: httpd-ldd
+httpd-ldd: httpd-modules
+	@for F in $(INSTALL_DIR)/bin/httpd `cat httpd-modules`; do \
+		ldd $$F >> $@ || exit 1; done
+
 .INTERMEDIATE: httpd-deps
-httpd-deps: httpd-modules
-	@ldd $(INSTALL_DIR)/bin/httpd `cat httpd-modules` | \
-		awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
-		sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
+httpd-deps: httpd-ldd
+	@cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
 # Generating manifest rules for Apache modules
 .INTERMEDIATE: httpd-trusted-mods
