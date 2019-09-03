@@ -241,8 +241,8 @@ start-graphene-ssl-server: all
 
 .PHONY: clean
 clean:
-	rm -f *.manifest *.manifest.sgx *.token *.sig pal_loader $(CONF_FILES) *.pem pal_loader OUTPUT result-* *.html*
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader $(CONF_FILES) *.pem pal_loader OUTPUT result-* *.html*
 
 .PHONY: distclean
 distclean: clean
-	rm -rf $(LIGHTTPD_SRC).tar.gz $(LIGHTTPD_SRC) $(INSTALL_DIR) $(TEST_DATA)
+	$(RM) -r $(LIGHTTPD_SRC).tar.gz $(LIGHTTPD_SRC) $(INSTALL_DIR) $(TEST_DATA)
