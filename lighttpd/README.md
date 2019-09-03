@@ -1,20 +1,17 @@
-# Lighttpd example
+# lighttpd example
 
-This directory contains an example for running Lighttpd (version 1.4.54)
+This directory contains an example for running lighttpd (version 1.4.54)
 in Graphene, including the Makefile and a template for generating the manifest.
 The application is tested on Ubuntu 16.04, with both normal Linux and SGX
 platforms.
 
-# Installing from the Lighttpd source code
+# Installing from the lighttpd source code
 
-In this example, we build Lighttpd from the source code instead use an existing
-installation. To build Lighttpd on Ubuntu 16.04, please make sure that the
-following packages are properly installed:
+In this example, we build lighttpd from the source code instead of using an
+existing installation. To build lighttpd on Ubuntu 16.04, please make sure that
+the following packages are properly installed:
 
     sudo apt-get install -y build-essential apache2-utils
-
-After installing the packages, run `make` (non-debug) or `make DEBUG=1` (debug)
-in the directory to build and install Lighttpd.
 
 # Generating the manifest
 
@@ -27,89 +24,111 @@ step of compilation/installation).
 
 Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
-# Running Lighttpd natively, under Graphene, and under Graphene-SGX
+# Running lighttpd natively, under Graphene, and under Graphene-SGX
 
-## Running Lighttpd natively
+## Running lighttpd natively
 
-First, start the Lighttpd server. By default, the installed Lighttpdd server will
-use the Prefork multi-processing module (MPM).
+First, start the lighttpd server with the following command:
 
     make start-native-server
 
-If you wish to run Lighttpd with the Worker MPM, run the following command
-instead:
+If you wish to run lighttpd with multi-threading, run the following command:
 
     make start-native-multithreaded-server
 
-Because these commands will start the Lighttpd server in the foreground, you will
+Because these commands will start the lighttpd server in the foreground, you will
 need to open another console to run the client end.
 
 Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `LighttpdUtil`:
+You may also run the benchmark using `ab` from `apache2-utils`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
-Once you have finished testing or benchmarking the Lighttpd server, use Ctrl-C to
+If you wish to run lighttpd with SSL (i.e., as HTTPS server), run the following
+command:
+
+    make start-native-ssl-server
+
+Then, you can test the client end with SSL using `wget`:
+
+    wget --no-check-certificate https://127.0.0.1:8001/random/10K.1.html
+
+Once you have finished testing or benchmarking the lighttpd server, use Ctrl-C to
 terminate the server.
 
-## Running Lighttpd in Graphene
+## Running lighttpd in Graphene
 
-First, start the Lighttpd server. By default, the installed Lighttpdd server will
-use the Prefork multi-processing module (MPM).
+First, start the lighttpd server with the following command:
 
     make start-graphene-server
 
-If you wish to run Lighttpd with the Worker MPM, run the following command
-instead:
+If you wish to run lighttpd with multi-threading, run the following command:
 
     make start-graphene-multithreaded-server
 
-Because these commands will start the Lighttpd server in the foreground, you will
+Because these commands will start the lighttpd server in the foreground, you will
 need to open another console to run the client end.
 
 Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `LighttpdUtil`:
+You may also run the benchmark using `ab` from `apache2-utils`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
-Once you have finished testing or benchmarking the Lighttpd server, use Ctrl-C to
+If you wish to run lighttpd with SSL (i.e., as HTTPS server), run the following
+command:
+
+    make start-graphene-ssl-server
+
+Then, you can test the client end with SSL using `wget`:
+
+    wget --no-check-certificate https://127.0.0.1:8001/random/10K.1.html
+
+Once you have finished testing or benchmarking the lighttpd server, use Ctrl-C to
 terminate the server.
 
-## Running Lighttpd in Graphene-SGX
+## Running lighttpd in Graphene-SGX
 
 First, make sure to create the SGX-specific manifest, the signature, and the
 token file. Use the following command to generate them:
 
     make SGX=1
 
-Then, start the Lighttpd server. By default, the installed Lighttpdd server will
-use the Prefork multi-processing module (MPM).
+Then, start the lighttpd server with the following command:
 
     make start-graphene-server SGX=1
 
-If you wish to run Lighttpd with the Worker MPM, run the following command
+If you wish to run lighttpd with multi-threading, run the following command
 instead:
 
     make start-graphene-multithreaded-server SGX=1
 
-Because these commands will start the Lighttpd server in the foreground, you will
+Because these commands will start the lighttpd server in the foreground, you will
 need to open another console to run the client end.
 
 Once the server has started, you can test the server with `wget`
 
     wget http://127.0.0.1:8001/random/10K.1.html
 
-You may also run the benchmark using `ab` from `LighttpdUtil`:
+You may also run the benchmark using `ab` from `apache2-util`:
 
     ./benchmark-http.sh 127.0.0.1:8001
 
-Once you have finished testing or benchmarking the Lighttpd server, use Ctrl-C to
+If you wish to run lighttpd with SSL (i.e., as HTTPS server), run the following
+command:
+
+    make start-graphene-ssl-server SGX=1
+
+Then, you can test the client end with SSL using `wget`:
+
+    wget --no-check-certificate https://127.0.0.1:8001/random/10K.1.html
+
+Once you have finished testing or benchmarking the lighttpd server, use Ctrl-C to
 terminate the server.
 
 # Clean up the directory

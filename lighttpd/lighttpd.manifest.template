@@ -36,10 +36,10 @@ fs.mount.usr.type = chroot
 fs.mount.usr.path = /usr
 fs.mount.usr.uri = file:/usr
 
-# Mount the current working directory
-fs.mount.cwd.type = chroot
-fs.mount.cwd.path = $(INSTALL_DIR_ABSPATH)
-fs.mount.cwd.uri = file:$(INSTALL_DIR)
+# Mount the html directory
+fs.mount.html.type = chroot
+fs.mount.html.path = $(PWD)/html
+fs.mount.html.uri = file:html
 
 # Mount /var/tmp
 fs.mount.var_tmp.type = chroot
@@ -75,7 +75,23 @@ sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
 sgx.trusted_files.nss_files = file:/lib/x86_64-linux-gnu/libnss_files.so.2
 
 # Lighttpd modules and dependencies
+sgx.trusted_files.mod_indexfile = file:$(INSTALL_DIR)/lib/mod_indexfile.so
+sgx.trusted_files.mod_access = file:$(INSTALL_DIR)/lib/mod_access.so
+sgx.trusted_files.mod_alias = file:$(INSTALL_DIR)/lib/mod_alias.so
+sgx.trusted_files.mod_dirlisting = file:$(INSTALL_DIR)/lib/mod_dirlisting.so
+sgx.trusted_files.mod_staticfile = file:$(INSTALL_DIR)/lib/mod_staticfile.so
+sgx.trusted_files.mod_openssl = file:$(INSTALL_DIR)/lib/mod_openssl.so
+
 $(LIGHTTPD_TRUSTED_LIBS)
 
 # SGX untrusted (allowed) files / directories
+# If the HTML and configuration files are security-sensitive, they can be listed
+# as trusted files and be integrity-checked.
 sgx.allowed_files.html = file:html
+sgx.allowed_files.conf_1 = file:lighttpd.conf
+sgx.allowed_files.conf_2 = file:lighttpd-generic.conf
+sgx.allowed_files.conf_3 = file:lighttpd-server.conf
+sgx.allowed_files.conf_4 = file:lighttpd-multithreaded.conf
+sgx.allowed_files.conf_5 = file:lighttpd-ssl.conf
+sgx.allowed_files.server_key = file:server.pem
+sgx.allowed_files.dhparam = file:dhparam.pem
