@@ -23,6 +23,10 @@ make SGX=1
 SGX=1 ./pal_loader busybox sh
 # or
 SGX=1 ./pal_loader busybox.manifest.sgx sh
+
+# now a shell session should be running e.g. typing:
+ls
+# should run program `ls` which lists current working directory
 ```
 
 Note that busybox can be started via manifest file (which contains path to
