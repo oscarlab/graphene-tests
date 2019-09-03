@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 manifests = nginx.manifest
 SRCDIR = nginx-1.10.1
 HOST = $(firstword $(shell ifconfig | grep 'inet addr:'| grep -v '127.0.0.1' -m 1 | cut -d: -f2))

@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 R_SRC = R-3.1.2
 R_INSTALL = $(R_SRC)/build
 

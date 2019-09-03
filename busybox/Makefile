@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 exec_target = busybox.manifest busybox_nofork.manifest
 target = busybox busybox_gdb busybox_nofork busybox_nofork_gdb
 

@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 SRCDIR = src
 BUILDDIR = opt/ltp
 TESTCASEDIR = $(BUILDDIR)/testcases/bin

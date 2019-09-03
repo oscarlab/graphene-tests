@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 test_files = test_files
 
 exec_target = $(addsuffix .manifest,gcc as ld cc1 collect2)

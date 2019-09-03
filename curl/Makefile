@@ -1,3 +1,5 @@
+include ../../../../../build-config.mk
+
 manifests = curl.manifest
 
 target =
