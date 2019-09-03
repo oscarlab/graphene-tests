@@ -16,9 +16,9 @@ Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
 ## Building with a local R installation
 
-By default, the `make` command creates the manifest against the system R binary.
-If you have a local R installation, you may create the manifest with the `R_HOME`
-variable set accordingly. For example:
+By default, the `make` command creates the manifest for the system R binary
+(`/usr/lib/R/bin/exec/R`). If you have a local R installation, you may create
+the manifest with the `R_HOME` variable set accordingly. For example:
 
 ```
 make R_HOME=<install path>/lib/R SGX=1

@@ -23,7 +23,7 @@
 # by Stephan Steinhaus (stst@informatik.uni-frankfurt.de) 
 # Reference for Escoufier's equivalents vectors (test III.5):
 # Escoufier Y., 1970. Echantillonnage dans une population de variables
-# aleatoires réelles. Publ. Inst. Statis. Univ. Paris 19 Fasc 4, 1-47.
+# aleatoires rÃ©elles. Publ. Inst. Statis. Univ. Paris 19 Fasc 4, 1-47.
 #
 # type source("c:/<dir>/R2.R") to start the test
 

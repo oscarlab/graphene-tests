@@ -1,9 +1,9 @@
 # Build the manifest for R:
 #
-# - make
-# - make DEBUG=1
-# - make SGX=1
-# - make SGX=1 DEBUG=1
+# - make                Building for Linux
+# - make DEBUG=1        Building for Linux (with Graphene debug output)
+# - make SGX=1          Building for SGX
+# - make SGX=1 DEBUG=1  Building for SGX (with Graphene debug output)
 #
 # Use `make clean` to remove Graphene-generated files.
 
@@ -21,10 +21,6 @@ GRAPHENEDEBUG = inline
 else
 GRAPHENEDEBUG = none
 endif
-
-GREP = grep
-LDD  = ldd
-AWK  = awk
 
 LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):$(R_HOME)/lib
 export LD_LIBRARY_PATH
@@ -52,11 +48,11 @@ GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/lapack.so
 
 # Collect the dependencies (without repeats)
-R_ALL_DEPS = $(shell $(LDD) $(R_TARGETS) | $(AWK) '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
+R_ALL_DEPS = $(shell ldd $(R_TARGETS) | awk '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
 R_DEPS = $(filter-out $(GLIBC_DEPS),$(R_ALL_DEPS))
 
 ifeq ($(R_ALL_DEPS),)
-$(error "`$(LDD) $(R_TARGETS)` failed.")
+$(error "`ldd $(R_TARGETS)` failed.")
 endif
 
 # R manifests:
@@ -65,7 +61,7 @@ endif
 
 R.manifest: R.manifest.template
 	for F in $(R_DEPS); do \
-		P=`$(LDD) $(R_TARGETS) | $(GREP) $$F | $(AWK) '{print $$3; exit}'`; \
+		P=`ldd $(R_TARGETS) | grep $$F | awk '{print $$3; exit}'`; \
 		F=`echo $$F | tr --delete '+'`; \
 		R_TRUSTED_LIBS="$$R_TRUSTED_LIBS\nsgx.trusted_files.$$F = file:$$P"; \
 		done && \
@@ -107,7 +103,6 @@ sh.manifest.sgx: sh.manifest
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
-# Clean up
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
+	rm *.manifest *.manifest.sgx *.token *.sig pal_loader
