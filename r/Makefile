@@ -9,6 +9,9 @@
 
 # Constants
 
+# Needs bash for special features such as returning exit status from a pipe
+SHELL := /bin/bash
+
 # Installation location of R. By default, Graphene will run the system R executable.
 R_HOME ?= /usr/lib/R
 R_EXEC = $(R_HOME)/bin/exec/R
@@ -52,9 +55,10 @@ R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/la
 # Listing all the R dependencies, besides Glibc libraries
 .INTERMEDIATE: R-deps
 R-deps:
-	@ldd $(R_TARGETS) | \
-		awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
-		sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
+	@for F in $(R_TARGETS); do ldd $$F || exit 1; done \
+		| awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@; \
+	exit $${PIPESTATUS[0]}
 
 # Generating manifest rules for R dependencies
 .INTERMEDIATE: R-trusted-libs
