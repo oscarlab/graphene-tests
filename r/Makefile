@@ -41,25 +41,36 @@ endif
 #    - $(R_HOME)/library/stats/libs/stats.so
 #    - $(R_HOME)/modules/lapack.so
 
-# Skip the GLIBC libraries because they are already listed
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
 GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
 # Use the ldd result of R, stats.so, and lapack.so
 R_TARGETS = $(R_EXEC) $(R_HOME)/library/stats/libs/stats.so $(R_HOME)/modules/lapack.so
 
-# Collect the dependencies (without repeats)
-R_ALL_DEPS = $(shell ldd $(R_TARGETS) | awk '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
-R_DEPS = $(filter-out $(GLIBC_DEPS),$(R_ALL_DEPS))
+# Listing all the R dependencies, besides Glibc libraries
+.INTERMEDIATE: R-deps
+R-deps:
+	@ldd $(R_TARGETS) | \
+		awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
+		sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
-ifeq ($(R_ALL_DEPS),)
-$(error "`ldd $(R_TARGETS)` failed.")
-endif
+# Generating manifest rules for R dependencies
+.INTERMEDIATE: R-trusted-libs
+R-trusted-libs: R-deps
+	@R_LIBS="$(R_TARGETS)" && \
+	for F in `cat R-deps`; do \
+		P=`ldd $$R_LIBS | grep $$F | awk '{print $$3; exit}'`; \
+		N=`echo $$F | tr --delete '-'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
+	done > $@
 
 # R manifests:
 #   For each dependency, generate a rule as follows:
 #       sgx.trusted_files.xxxx = file:xxxx
 
-R.manifest: R.manifest.template
+R.manifest: R.manifest.template R-trusted-libs
 	for F in $(R_DEPS); do \
 		P=`ldd $(R_TARGETS) | grep $$F | awk '{print $$3; exit}'`; \
 		F=`echo $$F | tr --delete '+'`; \
@@ -69,7 +80,7 @@ R.manifest: R.manifest.template
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		-e 's|$$(R_HOME)|'"$(R_HOME)"'|g' \
 		-e 's|$$(R_EXEC)|'"$(R_EXEC)"'|g' \
-		-e 's|$$(R_TRUSTED_LIBS)|'"$$R_TRUSTED_LIBS"'|g' \
+		-e 's|$$(R_TRUSTED_LIBS)|'"`cat R-trusted-libs`"'|g' \
 		$< > $@
 
 sh.manifest: sh.manifest.template
@@ -105,4 +116,4 @@ pal_loader:
 
 .PHONY: clean
 clean:
-	rm *.manifest *.manifest.sgx *.token *.sig pal_loader
+	rm -f *.manifest *.manifest.sgx *.token *.sig pal_loader
