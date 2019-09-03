@@ -67,7 +67,7 @@ python-ldd:
 
 .INTERMEDIATE: python-deps
 python-deps: python-ldd
-	cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+	@cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
 		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
 # Generating manifest rules for Python dependencies
