@@ -1,3 +1,5 @@
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 HOST ?= 127.0.0.1
 PORT ?= 8001
 
@@ -14,7 +16,8 @@ APR_DIR = apr-1.4.6
 APRUTIL_DIR = apr-util-1.5.1
 PHP_DIR = php-5.6.6
 
-INSTALL_DIR = $(PWD)/obj
+INSTALL_DIR = $(THIS_DIR)/obj
+INSTALL_DIR_ABS = $(abspath $(INSTALL_DIR))
 SRC_DIRS = $(HTTPD_DIR) $(APR_DIR) $(APRUTIL_DIR) $(PHP_DIR)
 HTDOC=$(INSTALL_DIR)/htdocs
 
@@ -44,33 +47,33 @@ endif
 
 $(INSTALL_DIR)/lib/libapr-1.so.0: $(APR_DIR)
 	#cd $< && patch -p1 < ../disable-epoll.patch
-	cd $< && ./configure --prefix=$(INSTALL_DIR)
+	cd $< && ./configure --prefix=$(INSTALL_DIR_ABS)
 	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $< && $(MAKE) install
 
 $(INSTALL_DIR)/lib/libaprutil-1.so.0: $(APRUTIL_DIR) $(INSTALL_DIR)/lib/libapr-1.so.0
-	cd $< && ./configure --prefix=$(INSTALL_DIR) --with-apr=$(INSTALL_DIR)
+	cd $< && ./configure --prefix=$(INSTALL_DIR_ABS) --with-apr=$(INSTALL_DIR_ABS)
 	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $< && $(MAKE) install
 
 $(INSTALL_DIR)/bin/httpd $(INSTALL_DIR)/bin/apxs: $(INSTALL_DIR)/lib/libapr-1.so.0 $(INSTALL_DIR)/lib/libaprutil-1.so.0
 	[ -d $(HTTPD_DIR) ] || tar -xzf $(HTTPD_DIR).tar.gz
 	[ -f $(HTTPD_DIR)/Makefile ] || ( \
-	cd $(HTTPD_DIR) && ./configure --prefix=$(INSTALL_DIR) --with-apr=$(INSTALL_DIR) \
-	--with-apr-util=$(INSTALL_DIR) --with-mpm=prefork)
+	cd $(HTTPD_DIR) && ./configure --prefix=$(INSTALL_DIR_ABS) --with-apr=$(INSTALL_DIR_ABS) \
+	--with-apr-util=$(INSTALL_DIR_ABS) --with-mpm=prefork)
 	cd $(HTTPD_DIR) && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $(HTTPD_DIR) && $(MAKE) install
 
 $(INSTALL_DIR)/modules/libphp5.so: $(PHP_DIR) $(INSTALL_DIR)/bin/apxs
-	cd $< && ./configure --prefix=$(INSTALL_DIR) --with-apxs2=$(INSTALL_DIR)/bin/apxs \
+	cd $< && ./configure --prefix=$(INSTALL_DIR_ABS) --with-apxs2=$(INSTALL_DIR_ABS)/bin/apxs \
 	--disable-cgi --disable-cli --disable-soap
 	cd $< && $(MAKE) -j$(NPROCS) $(MAKE_FLAGS)
 	cd $< && $(MAKE) install
 
 .PHONY: build-conf
 build-conf:
-	[ -f $(INSTALL_DIR)/conf/httpd.conf.old ] || \
-		mv $(INSTALL_DIR)/conf/httpd.conf $(INSTALL_DIR)/conf/httpd.conf.old
+	[ -f $(INSTALL_DIR_ABS)/conf/httpd.conf.old ] || \
+		mv $(INSTALL_DIR_ABS)/conf/httpd.conf $(INSTALL_DIR_ABS)/conf/httpd.conf.old
 	sed -e "s/Listen 80/#Listen 80/g" \
 	    -e "s/User daemon/#User root/g" \
 	    -e "s/Group daemon/#Group root/g" \
@@ -78,28 +81,28 @@ build-conf:
 	    -e "s/#EnableSendfile on/EnableSendfile on/g" \
 	    -e "s/DirectoryIndex index.html/DirectoryIndex index.html index.php/g" \
 	    -e "s/^[ ]*CustomLog/#CustomLog/g" \
-	$(INSTALL_DIR)/conf/httpd.conf.old > $(INSTALL_DIR)/conf/httpd.conf.new
+	$(INSTALL_DIR_ABS)/conf/httpd.conf.old > $(INSTALL_DIR_ABS)/conf/httpd.conf.new
 	echo "\n\
 <IfModule mpm_prefork_module>\n\
     StartServers             $(PREFORK_WORKERS)\n\
     MinSpareServers          1\n\
     MaxSpareServers          $(PREFORK_WORKERS)\n\
     MaxConnectionsPerChild   0\n\
-</IfModule>\n" >> $(INSTALL_DIR)/conf/httpd.conf.new
+</IfModule>\n" >> $(INSTALL_DIR_ABS)/conf/httpd.conf.new
 	echo "\n\
 <IfModule mime_module>\n\
     AddType application/x-httpd-php .php\n\
-</IfModule>\n" >> $(INSTALL_DIR)/conf/httpd.conf.new
-	cd $(INSTALL_DIR)/conf && ln -sf httpd.conf.new httpd.conf
+</IfModule>\n" >> $(INSTALL_DIR_ABS)/conf/httpd.conf.new
+	cd $(INSTALL_DIR_ABS)/conf && ln -sf httpd.conf.new httpd.conf
 
 .PHONY: clean-server
 clean-server:
-	rm -f $(INSTALL_DIR)/logs/httpd-$(HOST)-$(PORT).pid
+	rm -f $(INSTALL_DIR_ABS)/logs/httpd-$(HOST)-$(PORT).pid
 
 .PHONY: start-native-server
 start-native-server: clean-server
 	@echo "Listen on $(HOST):$(PORT)"
-	$(PREFIX) $(INSTALL_DIR)/bin/httpd -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
+	$(PREFIX) $(INSTALL_DIR_ABS)/bin/httpd -D FOREGROUND -C "ServerName $(HOST)" -C "Listen $(HOST):$(PORT)" -C "PidFile logs/httpd-$(HOST)-$(PORT).pid"
 
 .PHONY: start-graphene-server
 start-graphene-server: clean-server
@@ -141,7 +144,7 @@ test-data: $(test-data)
 
 .PHONY: distclean
 distclean: clean
-	rm -rf $(INSTALL_DIR) $(SRC_DIRS)
+	rm -rf $(INSTALL_DIR_ABS) $(SRC_DIRS)
 
 .PHONY: clean-apache
 clean-apache:
