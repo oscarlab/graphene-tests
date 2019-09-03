@@ -7,6 +7,13 @@ yet tested in Graphene.
 
 # Generating the manifest
 
+## Installing prerequisites
+
+For generating the manifest and running the test scripts, please run the following
+command to install the required Python packages:
+
+    sudo apt-get install -f python-numpy python-scipy
+
 ## Building for Linux
 
 Run `make` (non-debug) or `make DEBUG=1` (debug) in the directory.
@@ -17,9 +24,9 @@ Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
 ## Building with a local Python installation
 
-By default, the `make` command creates the manifest against the system
-installation. If you have a local installation, you may create the manifest
-with the `PYTHONHOME` variable set accordingly. For example:
+By default, the `make` command creates the manifest for the Python binary from
+the system installation. If you have a local installation, you may create the
+manifest with the `PYTHONHOME` variable set accordingly. For example:
 
 ```
 make PYTHONHOME=<install path>/lib/python2.7 SGX=1

@@ -1,18 +1,26 @@
 # Build the manifest for Python 2.7:
 #
-# - make
-# - make DEBUG=1
-# - make SGX=1
-# - make SGX=1 DEBUG=1
+# - make                Building for Linux
+# - make DEBUG=1        Building for Linux (with Graphene debug output)
+# - make SGX=1          Building for SGX
+# - make SGX=1 DEBUG=1  Building for SGX (with Graphene debug output)
 #
 # Use `make clean` to remove Graphene-generated files.
 
 # Constants
 
+# Needs bash for special features such as returning exit status from a pipe
+SHELL := /bin/bash
+
 # Installation location of Python. By default, Graphene will run the system Python
 # executable.
 PYTHONHOME ?= /usr/lib/python2.7
 PYTHONEXEC ?= /usr/bin/python2.7
+
+# numpy and scipy are included as trusted libraries by default. Overwrite the
+# following variables to exclude these libraries
+USE_NUMPY ?= yes
+USE_SCIPY ?= yes
 
 # Relative path to Graphene root
 GRAPHENEDIR ?= ../../../../..
@@ -23,14 +31,10 @@ else
 GRAPHENEDEBUG = none
 endif
 
-GREP = grep
-LDD  = ldd
-AWK  = awk
-
 .PHONY: all
 all: python.manifest pal_loader
 ifeq ($(SGX),1)
-all: python.manifest.sgx
+all: python.manifest.sgx python.token python.sig
 endif
 
 # Python dependencies (generate from ldd):
@@ -39,43 +43,54 @@ endif
 # execution, so that the signer can include the file checksums.
 #
 # The dependencies are generated from the ldd results.
-#
-# Define the dynamic libraries to load (mainly for numpy, scipy, and http):
 
-PY_LIBS = $(PYTHONHOME)/dist-packages/numpy/linalg/lapack_lite.x86_64-linux-gnu.so \
-	  $(PYTHONHOME)/dist-packages/numpy/core/multiarray.x86_64-linux-gnu.so \
-	  $(PYTHONHOME)/dist-packages/scipy/sparse/_sparsetools.x86_64-linux-gnu.so \
-	  $(PYTHONHOME)/lib-dynload/_hashlib.x86_64-linux-gnu.so \
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
+GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
+
+# Define the python libraries which are dynamically loaded.
+PY_LIBS = $(PYTHONHOME)/lib-dynload/_hashlib.x86_64-linux-gnu.so \
 	  $(PYTHONHOME)/lib-dynload/_ctypes.x86_64-linux-gnu.so \
 	  $(PYTHONHOME)/lib-dynload/_ssl.x86_64-linux-gnu.so
 
-# Skip the GLIBC libraries because they are already listed
-GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
-
-# Collect the dependencies (without repeats)
-PY_ALL_DEPS = $(shell $(LDD) $(PY_LIBS) | $(AWK) '{if ($$2 == "=>") {split ($$1,s,/\./); print s[1]}}' | sort | uniq)
-PY_DEPS = $(filter-out $(GLIBC_DEPS),$(PY_ALL_DEPS))
-
-ifeq ($(PY_ALL_DEPS),)
-$(error "`$(LDD) $(PY_LIBS)` failed.")
+ifeq ($(USE_NUMPY),yes)
+PY_LIBS += $(PYTHONHOME)/dist-packages/numpy/linalg/lapack_lite.x86_64-linux-gnu.so \
+	   $(PYTHONHOME)/dist-packages/numpy/core/multiarray.x86_64-linux-gnu.so
 endif
+
+ifeq ($(USE_SCIPY),yes)
+PY_LIBS += $(PYTHONHOME)/dist-packages/scipy/sparse/_sparsetools.x86_64-linux-gnu.so
+endif
+
+# Listing all the Python dependencies, besides Glibc libraries
+.INTERMEDIATE: python-deps
+python-deps:
+	@for F in $(PY_LIBS); do ldd $$F || exit 1; done \
+		| awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@; \
+	exit $${PIPESTATUS[0]}
+
+# Generating manifest rules for Python dependencies
+.INTERMEDIATE: python-trusted-libs
+python-trusted-libs: python-deps
+	@PY_LIBS="$(PY_LIBS)" && \
+	for F in `cat python-deps`; do \
+		P=`ldd $$PY_LIBS | grep $$F | awk '{print $$3; exit}'`; \
+		N=`echo $$F | tr --delete '-'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
+	done > $@
 
 # Python manifests:
 #   For each dependency, generate a rule as follows:
 #       sgx.trusted_files.xxxx = file:xxxx
 
-python.manifest: python.manifest.template
-	PY_LIBS="$(PY_LIBS)" && \
-	for F in $(PY_DEPS); do \
-		P=`$(LDD) $$PY_LIBS | $(GREP) $$F | $(AWK) '{print $$3; exit}'`; \
-		F=`echo $$F | tr --delete '+'`; \
-		PYTHON_TRUSTED_LIBS="$$PYTHON_TRUSTED_LIBS\nsgx.trusted_files.$$F = file:$$P"; \
-		done && \
+python.manifest: python.manifest.template python-trusted-libs
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		-e 's|$$(PYTHONHOME)|'"$(PYTHONHOME)"'|g' \
 		-e 's|$$(PYTHONEXEC)|'"$(PYTHONEXEC)"'|g' \
-		-e 's|$$(PYTHON_TRUSTED_LIBS)|'"$$PYTHON_TRUSTED_LIBS"'|g' \
+		-e 's|$$(PYTHON_TRUSTED_LIBS)|'"`cat python-trusted-libs`"'|g' \
 		$< > $@
 
 # Python manifests for SGX:
@@ -87,6 +102,10 @@ python.manifest.sgx: python.manifest
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
 		-manifest $< -output $@
+
+python.sig: python.manifest.sgx
+
+python.token: python.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output python.token -sig python.sig
 
@@ -101,4 +120,4 @@ test: all
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
+	rm -f *.manifest *.manifest.sgx *.token *.sig pal_loader
