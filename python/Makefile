@@ -9,9 +9,6 @@
 
 # Constants
 
-# Needs bash for special features such as returning exit status from a pipe
-SHELL := /bin/bash
-
 # Installation location of Python. By default, Graphene will run the system Python
 # executable.
 PYTHONHOME ?= /usr/lib/python2.7
@@ -64,12 +61,14 @@ PY_LIBS += $(PYTHONHOME)/dist-packages/scipy/sparse/_sparsetools.x86_64-linux-gn
 endif
 
 # Listing all the Python dependencies, besides Glibc libraries
+.INTERMEDIATE: python-ldd
+python-ldd:
+	@for F in $(PY_LIBS); do ldd $$F >> $@ || exit 1; done
+
 .INTERMEDIATE: python-deps
-python-deps:
-	@for F in $(PY_LIBS); do ldd $$F || exit 1; done \
-		| awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
-		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@; \
-	exit $${PIPESTATUS[0]}
+python-deps: python-ldd
+	cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
 # Generating manifest rules for Python dependencies
 .INTERMEDIATE: python-trusted-libs
@@ -108,7 +107,6 @@ python.sig: python.manifest.sgx
 python.token: python.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output python.token -sig python.sig
-
 
 # Extra executables
 pal_loader:
