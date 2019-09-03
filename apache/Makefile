@@ -271,8 +271,8 @@ start-graphene-multithreaded-server: all clean-server
 
 .PHONY: clean
 clean:
-	rm -f *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* *.html*
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* *.html*
 
 .PHONY: distclean
 distclean: clean
-	rm -rf $(HTTPD_SRC).tar.gz $(HTTPD_SRC) $(INSTALL_DIR)
+	$(RM) -r $(HTTPD_SRC).tar.gz $(HTTPD_SRC) $(INSTALL_DIR)
