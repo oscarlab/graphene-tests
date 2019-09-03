@@ -71,11 +71,6 @@ R-trusted-libs: R-deps
 #       sgx.trusted_files.xxxx = file:xxxx
 
 R.manifest: R.manifest.template R-trusted-libs
-	for F in $(R_DEPS); do \
-		P=`ldd $(R_TARGETS) | grep $$F | awk '{print $$3; exit}'`; \
-		F=`echo $$F | tr --delete '+'`; \
-		R_TRUSTED_LIBS="$$R_TRUSTED_LIBS\nsgx.trusted_files.$$F = file:$$P"; \
-		done && \
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		-e 's|$$(R_HOME)|'"$(R_HOME)"'|g' \
