@@ -76,7 +76,7 @@ python-trusted-libs: python-deps
 	@PY_LIBS="$(PY_LIBS)" && \
 	for F in `cat python-deps`; do \
 		P=`ldd $$PY_LIBS | grep $$F | awk '{print $$3; exit}'`; \
-		N=`echo $$F | tr --delete '-'`; \
+		N=`echo $$F | tr --delete '+-'`; \
 		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
 	done > $@
 
