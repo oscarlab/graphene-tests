@@ -15,7 +15,7 @@ PYTHONHOME ?= /usr/lib/python2.7
 PYTHONEXEC ?= /usr/bin/python2.7
 
 # numpy and scipy are included as trusted libraries by default. Overwrite the
-# following variables to exclude these libraries
+# following variables to exclude these libraries.
 USE_NUMPY ?= yes
 USE_SCIPY ?= yes
 
@@ -43,7 +43,7 @@ endif
 
 # We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
 # binaries are already listed in the manifest template, so we can skip them
-# from the ldd results
+# from the ldd results.
 GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
 # Define the python libraries which are dynamically loaded.

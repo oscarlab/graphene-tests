@@ -10,7 +10,7 @@ yet tested in Graphene.
 ## Installing prerequisites
 
 For generating the manifest and running the test scripts, please run the following
-command to install the required Python packages:
+command to install the required Python packages (Ubuntu-specific):
 
     sudo apt-get install -f python-numpy python-scipy
 
