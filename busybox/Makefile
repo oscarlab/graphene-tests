@@ -1,16 +1,15 @@
-# Build busybox as follows:
+# Build Busybox as follows:
 #
 # - make               -- create non-SGX no-debug-log manifest
 # - make DEBUG=1       -- create non-SGX debug-log manifest
 # - make SGX=1         -- create SGX no-debug-log manifest
 # - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
 #
-# Any of these invocations clones busybox git repository and builds it
-# in the configuration according to default.config, in the latest (master
-# branch) version.
+# Any of these invocations clones Busybox git repository and builds it
+# in the latest (master branch) version.
 #
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
-# additionally remove the cloned busybox git repository.
+# additionally remove the cloned Busybox git repository.
 
 ################################# CONSTANTS ###################################
 
@@ -36,18 +35,22 @@ endif
 ############################ BUSYBOX EXECUTABLE ###############################
 
 # Busybox is built as usual, without any changes to the build process. The
-# source is cloned from a public repo and built via classic make, using
-# predefined config file ".config" (just for convenience). The result of this
-# build process is the final executable "src/busybox".
+# source is cloned from a public repo and built via classic make. The result of
+# this build process is the final executable "src/busybox".
 
 $(SRCDIR)/Makefile:
-	git clone git://busybox.net/busybox.git $(SRCDIR)
+	git clone https://github.com/mirror/busybox.git $(SRCDIR)
 	cd $(SRCDIR) && git checkout $(COMMIT)
 
 $(SRCDIR)/.config: $(SRCDIR)/Makefile
 	cd $(SRCDIR) && make clean && make defconfig
-	sed -e 's/.*CONFIG_BUSYBOX_EXEC_PATH.*/CONFIG_BUSYBOX_EXEC_PATH="\/busybox"/' -i $(SRCDIR)/.config
-	sed -e 's/.*CONFIG_FEATURE_SH_STANDALONE.*/CONFIG_FEATURE_SH_STANDALONE=y/' -i $(SRCDIR)/.config
+	# Enable usage of Busybox's built-in applets
+	sed -e 's/.*CONFIG_FEATURE_SH_STANDALONE.*/CONFIG_FEATURE_SH_STANDALONE=y/' \
+		-i $(SRCDIR)/.config
+	# Currently '/proc/self/exe' is bugged in graphene, so manually set path
+	# to the Busybox binary
+	sed -e 's/.*CONFIG_BUSYBOX_EXEC_PATH.*/CONFIG_BUSYBOX_EXEC_PATH="\/busybox"/' \
+		-i $(SRCDIR)/.config
 
 $(SRCDIR)/busybox: $(SRCDIR)/.config
 	cd $(SRCDIR) && make
@@ -86,7 +89,7 @@ busybox.manifest.sgx: busybox.manifest busybox
 ########################### COPIES OF EXECUTABLES #############################
 
 # Busybox build process creates the final executable as "src/busybox".
-# Copy busybox binary to our root directory and create a link to pal_loader for
+# Copy Busybox binary to our root directory and create a link to pal_loader for
 # simplicity.
 
 busybox: $(SRCDIR)/busybox
