@@ -30,13 +30,12 @@ src/src/redis-benchmark
 killall pal-Linux-SGX
 ```
 
-# Why this Redis config?
+# Why this Redis configuration?
 
-Notice that we run Redis with two configs: `save ''` and `protected-mode no`:
+Notice that we run Redis with two parameters: `save ''` and `protected-mode no`:
 
 - `save ''` disables saving DB to disk (both RDB snapshots and AOF logs). We
-  use this config to side-step some bugs during graceful shutdown of Redis.
-  TODO(dimakuv): understand the issue.
+  use this parameter to side-step some bugs during graceful shutdown of Redis.
 
 - `protected-mode no` allows clients to connect to Redis on any network
   interface. Even though we use the loopback interface (which is always allowed

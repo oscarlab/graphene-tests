@@ -4,7 +4,7 @@
 # - make SGX=1         -- create SGX no-debug-log manifest
 # - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
 #
-# Any of these invocations clones Redis git repository and builds Redis in
+# Any of these invocations clones Redis' git repository and builds Redis in
 # default configuration and in the latest-to-date (5.0.5) version.
 #
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
@@ -24,7 +24,7 @@ else
 GRAPHENEDEBUG = none
 endif
 
-.PHONY=all
+.PHONY: all
 all: redis-server redis-server.manifest pal_loader
 ifeq ($(SGX),1)
 all: redis-server.manifest.sgx
@@ -86,10 +86,10 @@ pal_loader:
 
 ################################## CLEANUP ####################################
 
-.PHONY=clean
+.PHONY: clean
 clean:
 	$(RM) *.token *.sig *.manifest.sgx *.manifest pal_loader redis-server *.rdb
 
-.PHONY=distclean
+.PHONY: distclean
 distclean: clean
 	$(RM) -r $(SRCDIR)

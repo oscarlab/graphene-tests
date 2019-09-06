@@ -34,17 +34,6 @@ loader.debug_type = $(GRAPHENEDEBUG)
 # - /lib/x86_64-linux-gnu is searched for Name Service Switch (NSS) libraries
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu
 
-# Explicitly unset all environment variables used by Redis. This is just a
-# precaution so that attacker cannot influence the default behavior of Redis
-# by setting unexpected environment variables.
-#
-# TODO(dimakuv): Graphene's PAL incorrectly handles this currently. See
-# `read_environments()`, the end of function. Below strings create envvars
-# with empty strings, which forces Redis to do incorrect things like thinking
-# it was started by systemd/upstart (due to UPSTART_JOB=="").
-#loader.env.UPSTART_JOB =
-#loader.env.NOTIFY_SOCKET =
-
 ################################# MOUNT FS  ###################################
 
 # General notes:
@@ -150,9 +139,9 @@ sgx.trusted_files.libnsl = file:/lib/x86_64-linux-gnu/libnsl.so.1
 
 ############################# SGX: ALLOWED FILES ###############################
 
-# Specify all non-static files used by app. These files may be opened by
-# Graphene-SGX but modifications to them are not detected (Graphene-SGX does
-# not measure their hashes). This may pose a security risk!
+# Specify all non-static files used by app. These files may be accessed by
+# Graphene-SGX but their integrity is not verified (Graphene-SGX does not
+# measure their hashes). This may pose a security risk!
 
 # Name Service Switch (NSS) files. Glibc reads these files as part of name-
 # service information gathering. For more info, see 'man nsswitch.conf'.
