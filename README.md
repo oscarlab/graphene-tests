@@ -5,7 +5,7 @@ This repository contains application samples for
 For how to build and run the Graphene Library OS,
 please see the README in the Graphene repository.
 
-For instructions to build and run each application under Graphene,
+For instructions how to build and run each application under Graphene,
 please see the README or README.md in each subdirectory.
 
 ## How to Contribute?
@@ -21,8 +21,8 @@ have the following elements:
 - `README.md`:
   Please document the tested environment and instructions for
   building and running the application. If your application sample
-  has any known issue or requirement, please also specify in the
-  documentation.
+  has any known issues or requirements, please also specify them in
+  the documentation.
 
 - `Makefile`:
   Users should be able to build your application sample by running
