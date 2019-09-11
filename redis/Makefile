@@ -39,7 +39,7 @@ endif
 $(SRCDIR)/src/redis-server:
 	git clone --recursive https://github.com/antirez/redis $(SRCDIR)
 	cd $(SRCDIR) && git checkout $(COMMIT)
-	cd $(SRCDIR) && make -j4
+	$(MAKE) -C $(SRCDIR)
 
 ################################ REDIS MANIFEST ###############################
 
