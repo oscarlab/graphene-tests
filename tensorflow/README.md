@@ -7,6 +7,6 @@ Known limitations:
 
 Install build dependencies with `make install-dependencies-ubuntu`.
 
-Build everything with `SGX=1 make && SGX_RUN=1 make`.
+Build everything with `SGX=1 make all sgx-tokens`.
 
 Run the example with `SGX=1 make check`.
