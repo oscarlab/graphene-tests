@@ -10,7 +10,7 @@
 loader.exec = file:$(INSTALL_DIR)/bin/httpd
 loader.execname = httpd
 
-# Graphene environment, including the path of the library OS and the debug
+# Graphene environment, including the path to the library OS and the debug
 # option (inline/none).
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENEDEBUG)
@@ -26,12 +26,12 @@ fs.mount.lib.type = chroot
 fs.mount.lib.path = /lib
 fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime
 
-# Host-level libraries (/lib/x86_64-linux-gnu) required by the Python executable
+# Host-level libraries (/lib/x86_64-linux-gnu) required by Apache 
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
 
-# Host-level directory (/usr) required by the Python executable
+# Host-level directory (/usr) required by Apache (needed for libaprutil-1.so)
 fs.mount.usr.type = chroot
 fs.mount.usr.path = /usr
 fs.mount.usr.uri = file:/usr
@@ -44,7 +44,7 @@ fs.mount.cwd.uri = file:$(INSTALL_DIR)
 # SGX general options
 
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
-# size must be specified during signing. If Python needs more virtual memory
+# size must be specified during signing. If Apache needs more virtual memory
 # than the enclave size, Graphene will not be able to allocate it.
 sgx.enclave_size = 256M
 
@@ -54,6 +54,9 @@ sgx.enclave_size = 256M
 # thread for handling inter-process communication (IPC), and potentially another
 # thread for asynchronous events. Therefore, the actual number of threads that
 # the application can create is (sgx.thread_num - 2).
+#
+# We (somewhat arbitrarily) specify 32 threads since mpm_worker_module can create
+# up to 25 threads/process.
 sgx.thread_num = 32
 
 # SGX trusted libraries
@@ -66,7 +69,8 @@ sgx.trusted_files.libdl = file:$(GRAPHENEDIR)/Runtime/libdl.so.2
 sgx.trusted_files.librt = file:$(GRAPHENEDIR)/Runtime/librt.so.1
 sgx.trusted_files.libutil = file:$(GRAPHENEDIR)/Runtime/libutil.so.1
 sgx.trusted_files.libpthread = file:$(GRAPHENEDIR)/Runtime/libpthread.so.0
-sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
+
+# Other libraries required by Apache
 sgx.trusted_files.libgcc_s = file:/lib/x86_64-linux-gnu/libgcc_s.so.1
 sgx.trusted_files.nss_files = file:/lib/x86_64-linux-gnu/libnss_files.so.2
 
@@ -74,7 +78,14 @@ sgx.trusted_files.nss_files = file:/lib/x86_64-linux-gnu/libnss_files.so.2
 $(HTTPD_TRUSTED_MODS)
 $(HTTPD_TRUSTED_LIBS)
 
-# SGX untrusted (allowed) files / directories
-sgx.allowed_files.htdocs = file:$(INSTALL_DIR)/htdocs
-sgx.allowed_files.conf = file:$(INSTALL_DIR)/conf
+# Apache configuration (trusted)
+sgx.trusted_files.conf1 = file:$(INSTALL_DIR)/conf/httpd-graphene.conf
+sgx.trusted_files.conf2 = file:$(INSTALL_DIR)/conf/mime.types
+
+# Apache HTTP documents (trusted)
+# We only specify those documents used in our tests/benchmarks.
+sgx.trusted_files.htdocs1 = file:$(INSTALL_DIR)/htdocs/index.html
+sgx.trusted_files.htdocs2 = file:$(INSTALL_DIR)/htdocs/random/10K.1.html
+
+# Apache logs directory (untrusted and allowed, since log files are not security-critical)
 sgx.allowed_files.logs = file:$(INSTALL_DIR)/logs

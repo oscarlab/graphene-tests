@@ -1,4 +1,4 @@
-# Build the manifest for Apache (HTTPD):
+# Build the manifest for Apache (httpd):
 #
 # - make                  Building for Linux
 # - make DEBUG=1          Building for Linux, with Graphene debug output
@@ -10,11 +10,13 @@
 # Use `make distclean` to further remove the Apache tarball, source code,
 # and installation.
 
-# Constants
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+ifeq ($(THIS_DIR), ./)   # to workaround the Graphene bug with allowed_files' paths
+THIS_DIR :=
+endif
 
-# Installation and source code of Apache
-INSTALL_DIR ?= install
-HTTPD_SRC ?= httpd-2.4.41
+INSTALL_DIR ?= $(THIS_DIR)install
+HTTPD_SRC ?= $(THIS_DIR)httpd-2.4.41
 HTTPD_CHECKSUM ?= 3c0f9663240beb0f008acf3b4501c4f339d7467ee345a36c86c46b4d6f3a5461
 
 # Mirros for downloading the Apache source code
@@ -28,11 +30,8 @@ HTTPD_MIRRORS ?= \
 LISTEN_HOST ?= 127.0.0.1
 LISTEN_PORT ?= 8001
 
-# Number of the preforked workers in Apache
-PREFORK_WORKERS := 4
-
 # Relative path to Graphene root
-GRAPHENEDIR ?= ../../../../..
+GRAPHENEDIR ?= $(THIS_DIR)../../../../..
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
@@ -81,7 +80,7 @@ GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
 $(INSTALL_DIR)/conf/httpd.conf: $(INSTALL_DIR)
 
-# Listing all the enabled modules in Apache, by Grep'ing httpd.conf
+# Listing all the enabled modules in Apache, by greping httpd.conf
 .INTERMEDIATE: httpd-modules
 httpd-modules: $(INSTALL_DIR)/conf/httpd.conf
 	@grep "^LoadModule" $(INSTALL_DIR)/conf/httpd.conf | \
@@ -118,10 +117,6 @@ httpd-trusted-libs: httpd-deps httpd-modules
 		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
 	done > $@
 
-# Apache manifests:
-#   For each dependency, generate a rule as follows:
-#       sgx.trusted_files.xxxx = file:xxxx
-
 httpd.manifest: httpd.manifest.template httpd-trusted-mods httpd-trusted-libs
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
@@ -131,10 +126,8 @@ httpd.manifest: httpd.manifest.template httpd-trusted-mods httpd-trusted-libs
 		-e 's|$$(HTTPD_TRUSTED_LIBS)|'"`cat httpd-trusted-libs`"'|g' \
 		$< > $@
 
-# Apache manifests for SGX:
-#   Generating the SGX-specific manifest (httpd.manifest.sgx), the enclave signature,
-#   and the token for enclave initialization.
-
+# Generating the SGX-specific manifest (httpd.manifest.sgx), the enclave signature,
+# and the token for enclave initialization.
 httpd.manifest.sgx: httpd.manifest
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
@@ -174,9 +167,9 @@ $(INSTALL_DIR)/conf/httpd-graphene.conf: $(INSTALL_DIR)/conf/httpd.conf
 	$< > $@
 	echo "\n\
 <IfModule mpm_prefork_module>\n\
-    StartServers             $(PREFORK_WORKERS)\n\
+    StartServers             4\n\
     MinSpareServers          1\n\
-    MaxSpareServers          $(PREFORK_WORKERS)\n\
+    MaxSpareServers          4\n\
     MaxConnectionsPerChild   0\n\
 </IfModule>\n" >> $@
 	echo "\n\
@@ -227,7 +220,7 @@ testdata: $(TEST_DATA)
 
 .PHONY: clean-server
 clean-server:
-	rm -f $(INSTALL_DIR)/logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid
+	$(RM) $(INSTALL_DIR)/logs/httpd-$(LISTEN_HOST)-$(LISTEN_PORT).pid
 
 .PHONY: start-native-server
 start-native-server: all clean-server
@@ -263,7 +256,7 @@ start-native-multithreaded-server: all clean-server
 start-graphene-multithreaded-server: all clean-server
 	@echo "Listen on $(LISTEN_HOST):$(LISTEN_PORT)"
 	$(PREFIX) ./pal_loader httpd.manifest -D FOREGROUND \
-		-f conf/httpd-new.conf \
+		-f conf/httpd-graphene.conf \
 		-C "LoadModule mpm_worker_module modules/mod_mpm_worker.so" \
 		-C "Listen $(LISTEN_HOST):$(LISTEN_PORT)" \
 		-C "ServerName $(LISTEN_HOST)" \
@@ -271,7 +264,7 @@ start-graphene-multithreaded-server: all clean-server
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* *.html*
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* httpd-ldd httpd-modules tmp
 
 .PHONY: distclean
 distclean: clean
