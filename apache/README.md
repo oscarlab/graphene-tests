@@ -22,17 +22,17 @@ make SGX=1
 # run original Apache against a benchmark (benchmark-http.sh, uses ab)
 make start-native-server &
 ./benchmark-http.sh 127.0.0.1:8001
-killall -SIGINT httpd
+kill -SIGINT %%
 
 # run Apache in non-SGX Graphene against a benchmark
 make start-graphene-server &
 ./benchmark-http.sh 127.0.0.1:8001
-killall -SIGINT pal-Linux
+kill -SIGINT %%
 
 # run Apache in Graphene-SGX against a benchmark
 SGX=1 make start-graphene-server &
 ./benchmark-http.sh 127.0.0.1:8001
-killall -SIGINT pal-Linux-SGX
+kill -SIGINT %%
 
 # you can also test the server using other utilities like wget
 wget http://127.0.0.1:8001/random/10K.1.html
