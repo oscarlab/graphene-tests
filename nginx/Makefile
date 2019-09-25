@@ -1,58 +1,169 @@
-manifests = nginx.manifest
-SRCDIR = nginx-1.10.1
-HOST = $(firstword $(shell ifconfig | grep 'inet addr:'| grep -v '127.0.0.1' -m 1 | cut -d: -f2))
-PORT = 8000
-CORES = 4
-THREADS = 25
+# Build the manifest for Nginx:
+#
+# - make                  Building for Linux
+# - make DEBUG=1          Building for Linux, with Graphene debug output
+# - make SGX=1            Building for SGX
+# - make SGX=1 DEBUG=1    Building for SGX, with Graphene debug output
+#
+# Use `make clean` to remove Graphene-generated files.
+#
+# Use `make distclean` to further remove the Nginx tarball, source code,
+# and installation.
 
-conf_files = http.t
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+ifeq ($(THIS_DIR), ./)   # to workaround the Graphene bug with allowed_files' paths
+THIS_DIR :=
+endif
 
-target = build-nginx $(conf_files) test-data
-exec_target = $(manifests)
-clean-extra = clean-others
+INSTALL_DIR ?= $(THIS_DIR)install
+NGINX_SRC ?= $(THIS_DIR)nginx-1.16.1
+NGINX_CHECKSUM ?= f11c2a6dd1d3515736f0324857957db2de98be862461b5a542a3ac6188dbe32b
 
-extra_rules = -e 's:\$$(HOST):$(HOST):g' -e 's:\$$(PORT):$(PORT):g'
+# Mirros for downloading the Nginx source code
+NGINX_MIRRORS ?= \
+	http://nginx.org/download/
 
-include ../../Makefile.Test
+# Address and port for the Nginx server to listen
+LISTEN_HOST ?= 127.0.0.1
+LISTEN_PORT ?= 8002
 
-build-nginx: build/sbin/nginx
+# Relative path to Graphene root
+GRAPHENEDIR ?= $(THIS_DIR)../../../../..
 
-build/sbin/nginx: $(SRCDIR)
-	cd $(SRCDIR) && ./configure --prefix=$(PWD)/build
-	$(MAKE) -C $(SRCDIR)
-	$(MAKE) -C $(SRCDIR) install
+ifeq ($(DEBUG),1)
+GRAPHENEDEBUG = inline
+else
+GRAPHENEDEBUG = none
+endif
 
-$(SRCDIR): %: %.tar.gz
-	tar -xmzf $<
+.PHONY: all
+all: $(INSTALL_DIR)/sbin/nginx nginx.manifest pal_loader config testdata
+ifeq ($(SGX),1)
+all: nginx.manifest.sgx nginx.sig nginx.token
+endif
 
-$(conf_files): %.t: %.t.template
-	sed $(extra_rules) $< > $@
+# The make targets for downloading and compiling the Nginx source code, and
+# installing the binaries.
 
-start-native-server:
-	$(PREFIX) build/sbin/nginx -c $(abspath http.t)
+$(INSTALL_DIR)/sbin/nginx: $(NGINX_SRC)/configure
+	cd $(NGINX_SRC) && ./configure --prefix=$(abspath $(INSTALL_DIR))
+	cd $(NGINX_SRC) && $(MAKE)
+	cd $(NGINX_SRC) && $(MAKE) install
 
-start-graphene-server:
-	$(PREFIX) ./nginx.manifest -c $(abspath http.t) -g "user root;"
+$(NGINX_SRC)/configure: $(NGINX_SRC).tar.gz
+	tar -mxzf $<
 
-random-data = $(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
-	      $(foreach n,1 2 3 4 5,10K.$n.html) \
-	      $(foreach n,1 2 3 4 5,100K.$n.html) \
-	      $(foreach n,1 2 3,1M.$n.html) \
-	      $(foreach n,1 2 3,10M.$n.html) \
-	      $(foreach n,1 2 3,100.$n.html)
+$(NGINX_SRC).tar.gz:
+	for MIRROR in $(NGINX_MIRRORS); do \
+		wget --timeout=10 $${MIRROR}$(NGINX_SRC).tar.gz -O tmp \
+		&& break; \
+	done
+	@[ "`sha256sum tmp`" = "$(NGINX_CHECKSUM)  tmp" ] || \
+		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
+	mv -f tmp $@
 
-test-data = build/html/random $(addprefix build/html/random/,$(random-data))
+# Nginx dependencies (generate from ldd):
+#
+# For SGX, the manifest needs to list all the libraries loaded during the
+# execution, so that the signer can include the file checksums.
+#
+# The dependencies are generated from the ldd results.
 
-build/html/random:
-	mkdir -p $@
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
+GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libutil libpthread
 
-build/html/random/%.html: build/html/random
+# Listing all the Nginx dependencies, besides Glibc libraries
+.INTERMEDIATE: nginx-ldd
+nginx-ldd: $(INSTALL_DIR)/sbin/nginx
+	@for F in $(INSTALL_DIR)/sbin/nginx; do \
+		ldd $$F >> $@ || exit 1; done
+
+.INTERMEDIATE: nginx-deps
+nginx-deps: nginx-ldd
+	@cat $< | awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' \
+		| sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
+
+# Generating manifest rules for Nginx dependencies
+.INTERMEDIATE: nginx-trusted-libs
+nginx-trusted-libs: nginx-deps
+	@HTTPD_LIBS="$(INSTALL_DIR)/sbin/nginx" && \
+	for F in `cat nginx-deps`; do \
+		P=`ldd $$HTTPD_LIBS | grep $$F | awk '{print $$3; exit}'`; \
+		N=`echo $$F | tr --delete '-'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
+	done > $@
+
+nginx.manifest: nginx.manifest.template nginx-trusted-libs
+	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
+		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
+		-e 's|$$(INSTALL_DIR)|'"$(INSTALL_DIR)"'|g' \
+		-e 's|$$(INSTALL_DIR_ABSPATH)|'"$(abspath $(INSTALL_DIR))"'|g' \
+		-e 's|$$(NGINX_TRUSTED_LIBS)|'"`cat nginx-trusted-libs`"'|g' \
+		$< > $@
+
+# Generating the SGX-specific manifest (nginx.manifest.sgx), the enclave signature,
+# and the token for enclave initialization.
+nginx.manifest.sgx: nginx.manifest
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-manifest $< -output $@
+
+nginx.sig: nginx.manifest.sgx
+
+nginx.token: nginx.sig
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
+		-output nginx.token -sig nginx.sig
+
+# Extra executables
+pal_loader:
+	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
+# Nginx configuration and test data
+#
+# The following changes are made in nginx.conf (copied as nginx-graphene.conf):
+# - Number of worker processes in increased from 1 to 4
+# - Listening port is changed from 80 to LISTEN_PORT
+# - Listening host is changed from localhost to LISTEN_HOST
+# - Add `daemon off` to run Nginx in the foreground
+.PHONY: config
+config: $(INSTALL_DIR)/conf/nginx-graphene.conf
+
+$(INSTALL_DIR)/conf/nginx-graphene.conf: $(INSTALL_DIR)/conf/nginx.conf
+	sed -e "s|^worker_processes[[:space:]]\+1;|worker_processes 4;|g" \
+		-e "s|listen[[:space:]]\+80;|listen $(LISTEN_PORT);|g" \
+		-e "s|server_name[[:space:]]\+localhost;|server_name $(LISTEN_HOST);|g" \
+	$< > $@
+	echo "\n\
+daemon off;\n" >> $@
+
+# HTTP docs:
+# Generating random HTML files in $(INSTALL_DIR)/html/random
+
+RANDOM_DIR = $(INSTALL_DIR)/html/random
+RANDOM_FILES = \
+	$(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
+	$(foreach n,1 2 3 4 5,10K.$n.html) \
+	$(foreach n,1 2 3 4 5,100K.$n.html) \
+	$(foreach n,1 2 3,1M.$n.html) \
+	$(foreach n,1 2 3,10M.$n.html) \
+	$(foreach n,1 2 3,100.$n.html)
+
+TEST_DATA = $(addprefix $(RANDOM_DIR)/,$(RANDOM_FILES))
+
+$(RANDOM_DIR)/%.html:
+	mkdir -p $(RANDOM_DIR)
 	dd if=/dev/urandom of=$@ count=1 bs=$(basename $(basename $(notdir $@)))
 
-test-data: $(test-data)
+.PHONY: testdata
+testdata: $(TEST_DATA)
 
+.PHONY: clean
+clean:
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* nginx-ldd tmp
+
+.PHONY: distclean
 distclean: clean
-	rm -rf build $(SRCDIR)
-
-clean-others:
-	rm -rf $(conf_files) $(test-data)
+	$(RM) -r $(NGINX_SRC).tar.gz $(NGINX_SRC) $(INSTALL_DIR)
