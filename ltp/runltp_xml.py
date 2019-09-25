@@ -31,10 +31,14 @@ import time
 
 import xml.etree.ElementTree as etree
 
+DEFAULT_CONFIG = 'ltp.conf'
+
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--config', '-c', metavar='FILENAME',
+    action='append',
     type=argparse.FileType('r'),
-    help='config file (default: %(default)s)')
+    help='config file (default: {}); may be given multiple times'.format(
+        DEFAULT_CONFIG))
 
 argparser.add_argument('--option', '-o', metavar='KEY=VALUE',
     action='append',
@@ -50,7 +54,7 @@ argparser.add_argument('cmdfile', metavar='FILENAME',
     help='cmdfile (default: stdin)')
 
 argparser.set_defaults(
-    config='ltp.cfg',
+    config=None,
     option=[],
     verbose=0,
     cmdfile='-')
@@ -341,7 +345,7 @@ class TestSuite:
 def _getintset(value):
     return set(int(i) for i in value.strip().split())
 
-def load_config(file):
+def load_config(files):
     config = configparser.ConfigParser(
         converters={
             'path': pathlib.Path,
@@ -355,8 +359,9 @@ def load_config(file):
             'junit-classname': 'LTP',
         })
 
-    with file:
-        config.read_file(file)
+    for file in files:
+        with file:
+            config.read_file(file)
 
     return config
 
@@ -366,6 +371,9 @@ def main(args=None):
         level=logging.WARNING)
     args = argparser.parse_args(args)
     _log.setLevel(_log.level - args.verbose * 10)
+
+    if args.config is None:
+        args.config = [open(DEFAULT_CONFIG)]
 
     config = load_config(args.config)
     for token in args.option:

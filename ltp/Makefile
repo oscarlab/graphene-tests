@@ -43,9 +43,9 @@ regression:
 		$(MAKE) ltp.xml; \
 	fi
 
-%.xml: %.cfg $(LTPSCENARIO) $(target)
+%.xml: %.cfg ltp-bug-1023.cfg $(LTPSCENARIO) $(target)
 	./contrib/conf_lint.py < $<
-	./runltp_xml.py -c $< $(LTPSCENARIO) > $@
+	./runltp_xml.py -c $< -c ltp-bug-1023.cfg $(LTPSCENARIO) > $@
 
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
