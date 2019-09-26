@@ -5,7 +5,7 @@ BEGIN{
 		blocked[test]
 	}
 
-	if (SGX)  {
+	if (ENVIRON["SGX"])  {
 	    pal_str = "./pal_loader SGX"
 	} else {
 	    pal_str = "./pal_loader"
