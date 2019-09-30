@@ -31,6 +31,11 @@ import time
 
 import xml.etree.ElementTree as etree
 
+try:
+    fspath = os.fspath
+except AttributeError:
+    fspath = str
+
 DEFAULT_CONFIG = 'ltp.conf'
 
 argparser = argparse.ArgumentParser()
@@ -133,9 +138,15 @@ class TestRunner:
         etree.SubElement(self._add_result(subtest), 'skipped').text = message
         self.suite.inc('skipped')
 
+    def make_manifest(self):
+        ((self.suite.bindir / self.cmd[0]).with_suffix('.manifest')
+            .symlink_to('manifest'))
 
     async def _run_cmd(self):
-        cmd = [*self.suite.loader, *shlex.split(self.cmd)]
+        if self.suite.sgx:
+            self.make_manifest()
+
+        cmd = [*self.suite.loader, *self.cmd]
         timeout = self.cfgsection.getfloat('timeout')
         self.log.info('starting %r with timeout %d', cmd, timeout)
         start_time = time.time()
@@ -143,7 +154,7 @@ class TestRunner:
         # pylint: disable=subprocess-popen-preexec-fn
         proc = await asyncio.create_subprocess_exec(
             *cmd,
-            cwd=self.suite.bindir,
+            cwd=fspath(self.suite.bindir),
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             preexec_fn=os.setsid,
             close_fds=True)
@@ -293,22 +304,22 @@ class TestRunner:
 class TestSuite:
     def __init__(self, config):
         self.config = config
+        self.sgx = self.config.getboolean(config.default_section, 'sgx')
 
         self.loader = [
-            str(config.getpath(config.default_section, 'loader').resolve())]
-        if self.config.getboolean(config.default_section, 'sgx'):
+            fspath(config.getpath(config.default_section, 'loader').resolve())]
+        if self.sgx:
             self.loader.append('SGX')
 
-        self.bindir = str(
+        self.bindir = (
             config.getpath(config.default_section, 'ltproot') / 'testcases/bin')
 
         # Running parallel tests under SGX is risky, see README.
         # However, if user wanted to do that, we shouldn't stand in the way,
         # just issue a warning.
-        has_sgx = config.getboolean(config.default_section, 'sgx')
         processes = config.getint(config.default_section, 'jobs',
-            fallback=(1 if has_sgx else len(os.sched_getaffinity(0))))
-        if has_sgx and processes != 1:
+            fallback=(1 if self.sgx else len(os.sched_getaffinity(0))))
+        if self.sgx and processes != 1:
             _log.warning('WARNING: SGX is enabled and jobs = %d (!= 1);'
                 ' expect stability issues', processes)
 
@@ -385,7 +396,7 @@ def main(args=None):
         for line in file:
             if line[0] in '\n#':
                 continue
-            tag, cmd = line.strip().split(maxsplit=1)
+            tag, *cmd = shlex.split(line)
             suite.add_test(tag, cmd)
 
     try:
