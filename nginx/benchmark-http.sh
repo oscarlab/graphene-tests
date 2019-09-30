@@ -1,1 +1,1 @@
-../lighttpd/benchmark-http.sh
+../common_tools/benchmark-http.sh
