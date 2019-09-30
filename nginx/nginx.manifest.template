@@ -71,8 +71,8 @@ sgx.trusted_files.libpthread = file:$(GRAPHENEDIR)/Runtime/libpthread.so.0
 
 # Name Service Switch (NSS) libraries (Glibc dependencies)
 sgx.trusted_files.libnsscompat = file:/lib/x86_64-linux-gnu/libnss_compat.so.2
-sgx.trusted_files.libnssfiles  = file:/lib/x86_64-linux-gnu/libnss_files.so.2
-sgx.trusted_files.libnssnis  = file:/lib/x86_64-linux-gnu/libnss_nis.so.2
+sgx.trusted_files.libnssfiles = file:/lib/x86_64-linux-gnu/libnss_files.so.2
+sgx.trusted_files.libnssnis = file:/lib/x86_64-linux-gnu/libnss_nis.so.2
 
 # libNSL is a dependency of libnss_compat above
 sgx.trusted_files.libnsl = file:/lib/x86_64-linux-gnu/libnsl.so.1
@@ -93,8 +93,8 @@ sgx.trusted_files.htdocs2 = file:$(INSTALL_DIR)/html/random/10K.1.html
 sgx.allowed_files.logs = file:$(INSTALL_DIR)/logs
 
 # Name Service Switch (NSS) files (Glibc reads these files)
-sgx.allowed_files.nsswitch  = file:/etc/nsswitch.conf
-sgx.allowed_files.ethers    = file:/etc/ethers
-sgx.allowed_files.hosts     = file:/etc/hosts
-sgx.allowed_files.group     = file:/etc/group
-sgx.allowed_files.passwd    = file:/etc/passwd
+sgx.allowed_files.nsswitch = file:/etc/nsswitch.conf
+sgx.allowed_files.ethers = file:/etc/ethers
+sgx.allowed_files.hosts = file:/etc/hosts
+sgx.allowed_files.group = file:/etc/group
+sgx.allowed_files.passwd = file:/etc/passwd

@@ -1,4 +1,4 @@
-# Build the manifest for Nginx:
+# Building the manifest for Nginx:
 #
 # - make                  Building for Linux
 # - make DEBUG=1          Building for Linux, with Graphene debug output
@@ -11,7 +11,7 @@
 # and installation.
 
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ifeq ($(THIS_DIR), ./)   # to workaround the Graphene bug with allowed_files' paths
+ifeq ($(THIS_DIR), ./)  # workaround Graphene issue #1044 with allowed_files
 THIS_DIR :=
 endif
 
@@ -19,7 +19,7 @@ INSTALL_DIR ?= $(THIS_DIR)install
 NGINX_SRC ?= $(THIS_DIR)nginx-1.16.1
 NGINX_CHECKSUM ?= f11c2a6dd1d3515736f0324857957db2de98be862461b5a542a3ac6188dbe32b
 
-# Mirros for downloading the Nginx source code
+# Mirrors for downloading the Nginx source code
 NGINX_MIRRORS ?= \
 	http://nginx.org/download/
 
