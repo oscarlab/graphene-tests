@@ -29,9 +29,10 @@ do
 
 		THROUGHPUT=$(grep -m1 "Requests per second:" OUTPUT | awk '{ print $4 }')
 		LATENCY=$(grep -m1 "Time per request:" OUTPUT | awk '{ print $4 }')
+        FAILED=$(grep -m1 "Failed requests:" OUTPUT | awk '{print $3 }')
 		THROUGHPUTS[$CONCURRENCY]="${THROUGHPUTS[$CONCURRENCY]} $THROUGHPUT"
 		LATENCIES[$CONCURRENCY]="${LATENCIES[$CONCURRENCY]} $LATENCY"
-		echo "concurrency=$CONCURRENCY, throughput=$THROUGHPUT, latency=$LATENCY"
+		echo "concurrency=$CONCURRENCY, throughput=$THROUGHPUT, latency=$LATENCY, failed=$FAILED"
 	done
 	RUN=$(expr $RUN + 1)
 done

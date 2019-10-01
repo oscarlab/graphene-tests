@@ -26,6 +26,8 @@ LIGHTTPD_MIRRORS ?= \
 # Host and port for testing the Lighttpd server
 HOST ?= 127.0.0.1
 PORT ?= 8001
+THREADS ?= 4
+GRAPHENE_THREADS = 6
 
 # Relative path to Graphene root
 GRAPHENEDIR ?= ../../../../..
@@ -80,15 +82,14 @@ $(LIGHTTPD_SRC).tar.gz:
 # Skip the GLIBC libraries because they are already listed
 GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
 
-LIGHTTPD_LIBS = $(INSTALL_DIR)/sbin/lighttpd \
-		$(INSTALL_DIR)/lib/mod_indexfile.so \
+LIGHTTPD_LIBS = $(INSTALL_DIR)/lib/mod_indexfile.so \
 		$(INSTALL_DIR)/lib/mod_dirlisting.so \
 		$(INSTALL_DIR)/lib/mod_staticfile.so
 
 # Listing all the Lighttpd dependencies, besides Glibc libraries
 .INTERMEDIATE: lighttpd-deps
 lighttpd-deps:
-	@$(LDD) $(LIGHTTPD_LIBS) | \
+	@$(LDD) $(LIGHTTPD_LIBS) $(INSTALL_DIR)/sbin/lighttpd | \
 		$(AWK) '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
 		sort | uniq | $(GREP) -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
@@ -97,21 +98,30 @@ lighttpd-deps:
 lighttpd-trusted-libs: lighttpd-deps
 	@LIGHTTPD_LIBS="$(LIGHTTPD_LIBS)" && \
 	for F in `cat lighttpd-deps`; do \
-		P=`$(LDD) $$LIGHTTPD_LIBS | $(GREP) $$F | $(AWK) '{print $$3; exit}'`; \
+		P=`$(LDD) $$LIGHTTPD_LIBS $(INSTALL_DIR)/sbin/lighttpd | $(GREP) $$F | $(AWK) '{print $$3; exit}'`; \
 		N=`echo $$F | tr --delete '-'`; \
 		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
+	done > $@
+
+.INTERMEDIATE: lighttpd-trusted-mods
+lighttpd-trusted-mods:
+	for F in $(LIGHTTPD_LIBS); do \
+		N=`basename $$F .so | tr --delete '-'`; \
+		echo -n "sgx.trusted_files.$$N = file:$$F\\\\n"; \
 	done > $@
 
 # Lighttpd manifests:
 #   For each dependency, generate a rule as follows:
 #       sgx.trusted_files.xxxx = file:xxxx
 
-lighttpd.manifest: lighttpd.manifest.template lighttpd-trusted-libs
+lighttpd.manifest: lighttpd.manifest.template lighttpd-trusted-libs lighttpd-trusted-mods
 	$(SED) -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		-e 's|$$(INSTALL_DIR)|'"$(INSTALL_DIR)"'|g' \
 		-e 's|$$(INSTALL_DIR_ABSPATH)|'"$(abspath $(INSTALL_DIR))"'|g' \
+		-e 's|$$(LIGHTTPD_TRUSTED_MODS)|'"`cat lighttpd-trusted-mods`"'|g' \
 		-e 's|$$(LIGHTTPD_TRUSTED_LIBS)|'"`cat lighttpd-trusted-libs`"'|g' \
+		-e 's|$$(THREADS)|'"$(GRAPHENE_THREADS)"'|g' \
 		$< > $@
 
 # Lighttpd manifests for SGX:
@@ -135,7 +145,7 @@ pal_loader:
 
 lighttpd-server.conf:
 	@rm -rf $@
-	@echo "server.document-root       = \"$(PWD)/html\""    >> $@
+	@echo "server.document-root       = \"/html\""    >> $@
 	@echo "server.port                = $(PORT)"            >> $@
 	@echo "server.bind                = \"$(HOST)\""        >> $@
 
@@ -182,7 +192,10 @@ RANDOM_FILES = \
 	$(foreach n,1 2 3,10M.$n.html) \
 	$(foreach n,1 2 3,100.$n.html)
 
-TEST_DATA = $(addprefix $(RANDOM_DIR)/,$(random-data))
+TEST_DATA = $(addprefix $(RANDOM_DIR)/,$(RANDOM_FILES))
+
+.PHONY: testdata
+testdata: $(TEST_DATA)
 
 $(RANDOM_DIR)/%.html:
 	mkdir -p $(RANDOM_DIR)
@@ -209,33 +222,33 @@ $(RANDOM_DIR)/%.html:
 #     Start the Lighttpd HTTPS server under Graphene in the foreground (using the Worker MPM)
 
 .PHONY: start-native-server
-start-native-server:
+start-native-server: | testdata
 	$(INSTALL_DIR)/sbin/lighttpd -D -m $(INSTALL_DIR)/lib -f lighttpd.conf
 
 .PHONY: start-native-multithreaded-server
-start-native-multithreaded-server:
+start-native-multithreaded-server: | testdata
 	$(INSTALL_DIR)/sbin/lighttpd -D -m $(INSTALL_DIR)/lib -f lighttpd-multithreaded.conf
 
 .PHONY: start-native-ssl-server
-start-native-ssl-server:
+start-native-ssl-server: | testdata
 	$(INSTALL_DIR)/sbin/lighttpd -D -m $(INSTALL_DIR)/lib -f lighttpd-ssl.conf
 
 .PHONY: start-graphene-server
-start-graphene-server:
+start-graphene-server: | testdata
 	./pal_loader lighttpd.manifest -D -m $(INSTALL_DIR)/lib -f lighttpd.conf
 
 .PHONY: start-graphene-multithreaded-server
-start-graphene-multithreaded-server:
+start-graphene-multithreaded-server: | testdata
 	./pal_loader lighttpd.manifest -D -m $(INSTALL_DIR)/lib -f lighttpd-multithreaded.conf
 
 .PHONY: start-graphene-ssl-server
-start-graphene-ssl-server:
+start-graphene-ssl-server: | testdata
 	./pal_loader lighttpd.manifest -D -m $(INSTALL_DIR)/lib -f lighttpd-ssl.conf
 
 .PHONY: clean
 clean:
-	$(RM) -f *.manifest *.manifest.sgx *.token *.sig pal_loader $(CONF_FILES) *.pem pal_loader
+	$(RM) -f *.manifest *.manifest.sgx *.token *.sig pal_loader $(CONF_FILES) pal_loader
 
 .PHONY: distclean
 distclean: clean
-	$(RM) -rf $(LIGHTTPD_SRC).tar.gz $(LIGHTTPD_SRC) $(INSTALL_DIR) $(TEST_DATA)
+	$(RM) -rf $(LIGHTTPD_SRC).tar.gz $(LIGHTTPD_SRC) $(INSTALL_DIR) $(TEST_DATA) *.pem
