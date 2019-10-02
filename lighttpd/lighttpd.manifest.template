@@ -1,8 +1,8 @@
-# Lighttpd manifest example
+# lighttpd manifest example
 #
 # This manifest was prepared and tested on Ubuntu 16.04.
 #
-# Lighttpd must be run with the pal_loader:
+# lighttpd must be run with the pal_loader:
 #
 # ./pal_loader lighttpd.manifest <script>
 
@@ -15,7 +15,7 @@ loader.execname = lighttpd
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENEDEBUG)
 
-# Environment variables for Lighttpd
+# Environment variables for lighttpd
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:$(INSTALL_DIR)/lib
 
 # Mounted FSes. The following "chroot" FSes mount a part of the host FS into the
@@ -26,12 +26,12 @@ fs.mount.lib.type = chroot
 fs.mount.lib.path = /lib
 fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime
 
-# Host-level libraries (/lib/x86_64-linux-gnu) required by the Python executable
+# Host-level libraries (/lib/x86_64-linux-gnu) required by the lighttpd executable
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
 
-# Host-level directory (/usr) required by the Python executable
+# Host-level directory (/usr) required by the lighttpd executable
 fs.mount.usr.type = chroot
 fs.mount.usr.path = /usr
 fs.mount.usr.uri = file:/usr
@@ -41,12 +41,7 @@ fs.mount.cwd.type = chroot
 fs.mount.cwd.path = $(INSTALL_DIR_ABSPATH)
 fs.mount.cwd.uri = file:$(INSTALL_DIR)
 
-# Mount the current working directory
-fs.mount.html.type = chroot
-fs.mount.html.path = /html
-fs.mount.html.uri = file:html
-
-# Mount /var/tmp
+# Mount lighttpd's default server.upload-dirs path
 fs.mount.var_tmp.type = chroot
 fs.mount.var_tmp.path = /var/tmp
 fs.mount.var_tmp.uri = file:/var/tmp
@@ -54,7 +49,7 @@ fs.mount.var_tmp.uri = file:/var/tmp
 # SGX general options
 
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
-# size must be specified during signing. If Python needs more virtual memory
+# size must be specified during signing. If lighttpd needs more virtual memory
 # than the enclave size, Graphene will not be able to allocate it.
 sgx.enclave_size = 256M
 
@@ -64,7 +59,7 @@ sgx.enclave_size = 256M
 # thread for handling inter-process communication (IPC), and potentially another
 # thread for asynchronous events. Therefore, the actual number of threads that
 # the application can create is (sgx.thread_num - 2).
-sgx.thread_num = $(THREADS)
+sgx.thread_num = 3
 
 # SGX trusted libraries
 
@@ -79,15 +74,13 @@ sgx.trusted_files.libpthread = file:$(GRAPHENEDIR)/Runtime/libpthread.so.0
 sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
 sgx.trusted_files.nss_files = file:/lib/x86_64-linux-gnu/libnss_files.so.2
 
-# Lighttpd modules and dependencies
+# lighttpd modules and dependencies
 $(LIGHTTPD_TRUSTED_MODS)
 $(LIGHTTPD_TRUSTED_LIBS)
-
-# SGX untrusted (allowed) files / directories
-sgx.allowed_files.html = file:html
 
 # Trusted configuration files
 sgx.trusted_files.conf = file:lighttpd.conf
 sgx.trusted_files.conf2 = file:lighttpd-generic.conf
-sgx.trusted_files.conf3 = file:lighttpd-multithreaded.conf
-sgx.trusted_files.conf4 = file:lighttpd-server.conf
+sgx.trusted_files.conf3 = file:lighttpd-server.conf
+
+sgx.allowed_files.install = file:install
