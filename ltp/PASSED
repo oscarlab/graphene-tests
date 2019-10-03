@@ -105,8 +105,6 @@ clock_gettime02,9
 clock_gettime02,10
 clock_nanosleep01,3
 clone01,1
-clone02,1
-clone02,2
 clone03,1
 clone04,1
 clone06,1

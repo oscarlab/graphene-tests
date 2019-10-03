@@ -3,6 +3,9 @@ Flaky tests
 
 These should be debugged, or revisited after memory debugging PRs are merged
 
+clone02 - Invokes clone with CLONE_VM but without either of CLONE_THREAD or CLONE_VFORK, i.e., a
+process sharing its parents address space. Graphene doesn't support this exotic model. Bug exposed by #1034.
+
 waitpid03,1 and 2 - fails about 20% of the time
 preadv01 - fails intermittently in CI - perhaps an unrelated bug?
 preadv01,2
