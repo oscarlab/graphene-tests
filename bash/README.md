@@ -14,7 +14,7 @@ Run `make` (non-debug) or `make DEBUG=1` (debug) in the directory.
 
 Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
-# Run Bash with Graphene
+# Running Bash with Graphene
 
 Here's an example of running Bash scripts under Graphene:
 

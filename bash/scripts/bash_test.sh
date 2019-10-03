@@ -7,8 +7,8 @@ for (( c=1; c<=$times; c++ ))
 do
 	echo "hello $c"
 	cp somefile testdir/somefile
-	rm -rf testdir/somefile
+	cat somefile > testdir/createdfile
 	ls testdir/
-	cat somefile > testdir/x
-	date
-done > OUTPUT
+	rm -rf testdir/somefile testdir/createdfile
+	date +"current date is %D"
+done

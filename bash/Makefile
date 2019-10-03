@@ -1,4 +1,4 @@
-# Build the manifests for Bash:
+# Use one of these commands to build the manifest for Bash:
 #
 # - make
 # - make DEBUG=1
@@ -7,13 +7,12 @@
 #
 # Use `make clean` to remove Graphene-generated files.
 
-# Constants
-
 # Listing the programs to be run inside the bash script
 PROGRAMS = ls cat rm cp date
 
-# Relative path to Graphene root
+# Relative path to Graphene root and key for enclave signing
 GRAPHENEDIR ?= ../../../../..
+GRAPHENEKEY ?= $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
@@ -21,14 +20,10 @@ else
 GRAPHENEDEBUG = none
 endif
 
-GREP = grep
-LDD  = ldd
-AWK  = awk
-
 .PHONY: all
 all: bash.manifest $(addsuffix .manifest,$(PROGRAMS)) pal_loader
 ifeq ($(SGX),1)
-all: bash.manifest.sgx $(addsuffix .manifest.sgx,$(PROGRAMS))
+all: bash.token $(addsuffix .token,$(PROGRAMS))
 endif
 
 # Program dependencies (generate from ldd):
@@ -38,21 +33,23 @@ endif
 #
 # The dependencies are generated from the ldd results.
 
-# Skip the GLIBC libraries because they are already listed
-GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libpthread
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
+# binaries are already listed in the manifest template, so we can skip them
+# from the ldd results
+GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libutil libpthread
 
-# Listing all the Apache dependencies, besides Glibc libraries
+# Listing all Bash dependencies, besides Glibc libraries
 .INTERMEDIATE: $(addsuffix .deps,bash $(PROGRAMS))
 %.deps:
-	$(LDD) $(shell which $(basename $@)) | \
-		$(AWK) '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
-		($(GREP) -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) || true) > $@
+	ldd $(shell which $(basename $@)) | \
+		awk '{if ($$2 =="=>") {split($$1,s,/\./); print s[1]}}' | \
+		sort | uniq | (grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) || true) > $@
 
-# Generating manifest rules for Apache dependencies
+# Generating manifest rules for Bash dependencies
 .INTERMEDIATE: $(addsuffix .trusted-libs,bash $(PROGRAMS))
 %.trusted-libs: %.deps
 	for F in `cat $<`; do \
-		P=`$(LDD) $(shell which $(basename $@)) | $(GREP) $$F | $(AWK) '{print $$3; exit}'`; \
+		P=`ldd $(shell which $(basename $@)) | grep $$F | awk '{print $$3; exit}'`; \
 		N=`echo $$F | tr --delete '-'`; \
 		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
 	done > $@
@@ -82,48 +79,59 @@ $(addsuffix .manifest,$(PROGRAMS)): %.manifest: manifest.template %.trusted-libs
 		-e 's|$$(TRUSTED_CHILDREN)||g' \
 		$< > $@
 
-# Manifests for SGX:
-#   Generating the SGX-specific manifest (*.manifest.sgx), the enclave signature,
-#   and the token for enclave initialization.
-
+# Generating the SGX-specific manifest (*.manifest.sgx), the enclave signature,
+# and the token for enclave initialization.
 bash.manifest.sgx: bash.manifest $(addsuffix .manifest.sgx,$(PROGRAMS))
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
-		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-key $(GRAPHENEKEY) \
 		-manifest $< -output $@
+
+bash.sig: bash.manifest.sgx
+
+bash.token: bash.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output bash.token -sig bash.sig
 
 $(addsuffix .manifest.sgx,$(PROGRAMS)): %.manifest.sgx: %.manifest
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
-		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-key $(GRAPHENEKEY) \
 		-manifest $< -output $@
+
+$(addsuffix .sig,$(PROGRAMS)): %.sig: %.manifest.sgx
+
+$(addsuffix .token,$(PROGRAMS)): %.token: %.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output $(basename $<).token -sig $(basename $<).sig
-
 
 # Extra executables
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
-.PHONY: test
-test: all
-	@echo "\n\nRun \"ls\":"
+.PHONY: regression
+regression: all
 	./pal_loader bash.manifest -c "ls" > OUTPUT
-	@echo "[ Success ]"
+	@sleep 1  # to make sure Bash child processes flush output under Graphene-SGX
+	@grep -q "Makefile" OUTPUT && echo "[ Success 1/6 ]"
 	@rm OUTPUT
 
-	@echo "\n\nRun bash_test.sh (2 iterations):"
-	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 2"
-	@grep -q "hello 2" scripts/OUTPUT && echo "[ Success ]"
-	@rm scripts/OUTPUT
+	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 1" > OUTPUT
+	@sleep 1
+	@grep -q "hello 1" OUTPUT      && echo "[ Success 2/6 ]"
+	@grep -q "createdfile" OUTPUT  && echo "[ Success 3/6 ]"
+	@grep -q "somefile" OUTPUT     && echo "[ Success 4/6 ]"
+	@grep -q "current date" OUTPUT && echo "[ Success 5/6 ]"
+	@rm OUTPUT
 
-	@echo "\n\nRun bash_test.sh (100 iterations):"
-	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 100"
-	@grep -q "hello 100" scripts/OUTPUT && echo "[ Success ]"
-	@rm scripts/OUTPUT
+	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 3" > OUTPUT
+	@sleep 1
+	@grep -q "hello 3" OUTPUT      && echo "[ Success 6/6 ]"
+	@rm OUTPUT
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT scripts/testdir/*
+
+.PHONY: distclean
+distclean: clean
