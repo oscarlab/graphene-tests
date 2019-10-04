@@ -6,12 +6,12 @@ endif
 INSTALL_DIR ?= $(THIS_DIR)install
 
 LIGHTTPD_SRC ?= $(THIS_DIR)lighttpd-1.4.54
-LIGHTTPD_CHECKSUM ?= 5151d38cb7c4c40effa13710e77ebdbef899f945b062cf32befc02d128ac424c
+LIGHTTPD_HASH ?= 5151d38cb7c4c40effa13710e77ebdbef899f945b062cf32befc02d128ac424c
 
 LIGHTTPD_MIRRORS ?= \
 	https://download.lighttpd.net/lighttpd/releases-1.4.x/
 
-# Host and port lighttpd server will listen for requests
+# Host and port on which lighttpd listens
 HOST ?= 127.0.0.1
 PORT ?= 8001
 
@@ -53,7 +53,7 @@ $(LIGHTTPD_SRC).tar.gz:
 		wget --timeout=10 $${MIRROR}$(LIGHTTPD_SRC).tar.gz -O tmp \
 		&& break; \
 	done
-	@[ "`sha256sum tmp`" = "$(LIGHTTPD_CHECKSUM)  tmp" ] || \
+	@[ "`sha256sum tmp`" = "$(LIGHTTPD_HASH)  tmp" ] || \
 		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
 	mv -f tmp $@
 
@@ -127,18 +127,18 @@ pal_loader:
 # lighttpd configuration and test data
 
 lighttpd-server.conf:
-	@$(RM) -r $@
+	@$(RM) $@
 	@echo "server.document-root       = \"$(abspath $(INSTALL_DIR))/html\""    >> $@
 	@echo "server.port                = $(PORT)"            >> $@
 	@echo "server.bind                = \"$(HOST)\""        >> $@
 
 lighttpd.conf:
-	@$(RM) -r $@
+	@$(RM) $@
 	@echo "include \"lighttpd-server.conf\""                >> $@
 	@echo "include \"lighttpd-generic.conf\""               >> $@
 
 # Generate variously-sized HTML files in $(RANDOM_DIR)
-RANDOM_DIR = install/html/random
+RANDOM_DIR = $(INSTALL_DIR)/html/random
 RANDOM_FILES = \
 	$(foreach n,1 2 3 4 5 6 7 8 9 10,2K.$n.html) \
 	$(foreach n,1 2 3 4 5,10K.$n.html) \
