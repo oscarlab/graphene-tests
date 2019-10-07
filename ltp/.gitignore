@@ -6,3 +6,4 @@
 /syscalls.graphene
 /ltp-full-*.tar.xz
 /ltp-full-*/
+*~

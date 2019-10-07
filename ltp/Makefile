@@ -43,6 +43,10 @@ regression:
 	@echo "\n\nLTP tests for system calls:"
 	./syscalls.sh
 
+.PHONY: sgx-tokens
+sgx-tokens: build-manifest
+	$(MAKE) -C $(TESTCASEDIR) $@
+
 clean-build:
 	cd $(SRCDIR) && $(MAKE) clean
 	rm -rf $(BUILDDIR) *.csv opt run_output syscalls.graphene
