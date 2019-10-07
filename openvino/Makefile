@@ -1,9 +1,9 @@
-# Building the manifest for OpenVINO:
+# Build the manifest for OpenVINO:
 #
-# - make                  Building for Linux
-# - make DEBUG=1          Building for Linux, with Graphene debug output
-# - make SGX=1            Building for SGX
-# - make SGX=1 DEBUG=1    Building for SGX, with Graphene debug output
+# - make                Build for Linux, OpenVINO with Release build
+# - make DEBUG=1        Build for Linux, OpenVINO with Debug build, Graphene with debug output
+# - make SGX=1          Build for SGX, OpenVINO with Release build
+# - make SGX=1 DEBUG=1  Build for SGX, OpenVINO with Debug build, Graphene with debug output
 #
 # Use `make clean` to remove Graphene-generated files.
 #
@@ -15,11 +15,11 @@ THIS_DIR :=
 endif
 
 MODEL_DIR ?= $(THIS_DIR)model
-MODEL_VERSION ?= 2019_R3
+MODEL_COMMIT ?= acf297c73db8cb3f68791ae1fad4a7cc4a6039e5     # corresponds to tag "2019_R3"
 MODEL_NAME ?= VGG_VOC0712Plus_SSD_300x300_ft_iter_160000
 
 OPENVINO_DIR ?= $(THIS_DIR)openvino
-OPENVINO_VERSION ?= 2019_R2
+OPENVINO_COMMIT ?= ba6e22b1b5ee4cbefcc30e8d9493cddb0bb3dfdf  # corresponds to tag "2019_R2"
 
 # Relative path to Graphene root and key for enclave signing
 GRAPHENE_DIR ?= ../../../../..
@@ -43,7 +43,7 @@ endif
 
 $(MODEL_DIR)/README.md:
 	git clone https://github.com/opencv/open_model_zoo.git $(MODEL_DIR)
-	cd $(MODEL_DIR) && git checkout $(MODEL_VERSION)
+	cd $(MODEL_DIR) && git checkout $(MODEL_COMMIT)
 
 $(MODEL_DIR)/$(MODEL_NAME).bin: $(MODEL_DIR)/README.md
 	cd $(MODEL_DIR)/tools/downloader && python3 ./downloader.py \
@@ -55,14 +55,14 @@ $(MODEL_DIR)/$(MODEL_NAME).bin: $(MODEL_DIR)/README.md
 
 $(OPENVINO_DIR)/README.md:
 	git clone https://github.com/opencv/dldt.git $(OPENVINO_DIR)
-	cd $(OPENVINO_DIR) && git checkout $(OPENVINO_VERSION)
+	cd $(OPENVINO_DIR) && git checkout $(OPENVINO_COMMIT)
 	cd $(OPENVINO_DIR)/inference-engine && git submodule init
 	cd $(OPENVINO_DIR)/inference-engine && git submodule update --recursive
 
 $(OPENVINO_DIR)/inference-engine/bin/intel64/$(OPENVINO_BUILD)/object_detection_sample_ssd: $(OPENVINO_DIR)/README.md
 	cd $(OPENVINO_DIR)/inference-engine && mkdir -p build
 	cd $(OPENVINO_DIR)/inference-engine/build && cmake -DCMAKE_BUILD_TYPE=$(OPENVINO_BUILD) ..
-	$(MAKE) -j4 -C $(OPENVINO_DIR)/inference-engine/build
+	$(MAKE) -C $(OPENVINO_DIR)/inference-engine/build
 
 openvino.manifest: openvino.manifest.template
 	sed -e 's|$$(GRAPHENE_DIR)|'"$(GRAPHENE_DIR)"'|g' \

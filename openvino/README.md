@@ -1,6 +1,6 @@
 # OpenVINO
 
-This directory contains the Makefile and the template manifest for the most
+This directory contains a Makefile and a template manifest for the most
 recent version of OpenVINO toolkit (as of this writing, version 2019_R2).
 We use the "Object Detection C++ Sample SSD" (object_detection_sample_ssd)
 example from the OpenVINO distribution as a concrete application running
@@ -12,7 +12,7 @@ them to understand the requirements for OpenVINO/object_detection_sample_ssd
 running under Graphene-SGX.
 
 We build OpenVINO from the source code instead of using an existing installation.
-**Note:** the build process requires ~1.1GB of disk space and takes ~10 minutes.
+**Note:** the build process requires ~1.1GB of disk space and takes ~20 minutes.
 
 We also download the Open Model Zoo repository and use the SSD300 pre-trained
 model from it. **Note:** the model zoo requires ~350MB of disk space.
@@ -37,13 +37,13 @@ make SGX=1
 
 # run original OpenVINO/object_detection_sample_ssd
 # note that this assumes the Release build of OpenVINO (no DEBUG=1)
-./openvino/inference-engine/bin/intel64/Release/object_detection_sample_ssd -i images/horse.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
+./openvino/inference-engine/bin/intel64/Release/object_detection_sample_ssd -i images/horses.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
 
 # run OpenVINO/object_detection_sample_ssd in non-SGX Graphene
-./pal_loader openvino.manifest -i images/horse.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
+./pal_loader openvino.manifest -i images/horses.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
 
 # run OpenVINO/object_detection_sample_ssd in Graphene-SGX
-SGX=1 ./pal_loader openvino.manifest.sgx -i images/horse.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
+SGX=1 ./pal_loader openvino.manifest.sgx -i images/horses.jpg -m model/VGG_VOC0712Plus_SSD_300x300_ft_iter_160000.xml -d CPU
 
 # Each of these commands produces an image out_0.bmp with detected objects
 xxd out_0.bmp   # or open in any image editor
