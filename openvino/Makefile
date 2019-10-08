@@ -1,4 +1,4 @@
-# Build the manifest for OpenVINO:
+# Building the manifest for OpenVINO:
 #
 # - make                Build for Linux, OpenVINO with Release build
 # - make DEBUG=1        Build for Linux, OpenVINO with Debug build, Graphene with debug output
