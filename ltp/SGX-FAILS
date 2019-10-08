@@ -136,10 +136,13 @@ fcntl03_64,1
 fcntl04,1
 fcntl04_64,1
 flock06,2
+fork01,2
 fork04,1
 fork04,2
 fork04,3
 fork11,1
+ftruncate02,1
+ftruncate02_64,1
 ftruncate03,1
 ftruncate03,2
 ftruncate03,3
@@ -180,6 +183,8 @@ getpeername01,6
 getsockname01,3
 getsockname01,4
 getuid03,1
+kill01,1
+kill03,1
 kill09,1
 kill11,1
 kill11,2
@@ -237,6 +242,7 @@ msgget02,2
 msgget02,3
 msgsnd02,2
 msgsnd05,1
+msgrcv01,1
 munmap01,1
 munmap02,1
 nanosleep01,1
@@ -261,8 +267,12 @@ poll02,6
 poll02,7
 prctl02,1
 prctl02,2
+pread01,1
+pread01_64,1
 pread02_64,1
 pread02_64,2
+pwrite04,2
+pwrite04_64,2
 process_vm01,2
 process_vm01,4
 process_vm01,6
@@ -369,6 +379,7 @@ stat03_64,3
 stat03_64,4
 stat05,1
 stat05_64,1
+sync02,1
 syscall01,1
 syscall01,2
 syscall01,3

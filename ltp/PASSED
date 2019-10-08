@@ -108,7 +108,6 @@ fmtmsg01,3
 fmtmsg01,4
 fmtmsg01,5
 fork01,1
-fork01,2
 fork02,1
 fork03,1
 fpathconf01,1
@@ -131,8 +130,6 @@ fstatat01,6
 fsync03,1
 ftruncate01,1
 ftruncate01_64,1
-ftruncate02,1
-ftruncate02_64,1
 ftruncate03_64,1
 ftruncate03_64,2
 ftruncate03_64,3
@@ -194,8 +191,6 @@ getsockopt01,8
 getsockopt01,9
 gettid01,1
 getuid01,1
-kill01,1
-kill03,1
 listen01,1
 listen01,2
 llseek02,1
@@ -226,7 +221,6 @@ mmap03,1
 mmap04,1
 mmap08,1
 mmap15,1
-msgrcv01,1
 munmap03,1
 munmap03,2
 munmap03,3
@@ -249,14 +243,10 @@ pathconf01,7
 personality02,1
 pipe05,1
 pipe10,1
-pread01,1
-pread01_64,1
 pread02,1
 pread02,2
 pwrite01,1
 pwrite01_64,1
-pwrite04,2
-pwrite04_64,2
 read04,1
 readdir01,1
 readv01,1
@@ -722,7 +712,6 @@ socketcall04,1
 sockioctl01,1
 string01,1
 sync01,1
-sync02,1
 sysconf01,1
 sysconf01,2
 sysconf01,3
