@@ -24,6 +24,9 @@ For Ubuntu 16.04, install the following prerequisite packages:
 * Install CMake version >= 3.7.2 (on Ubuntu 16.04, this may require installing
   Cmake from a non-official APT repository like Kitware).
 
+* Install other required packages:
+  `apt install libusb-1.0.0 && pip3 install --upgrade protobuf==3.6.1`.
+
 * Install packages for Python3:
   `/usr/bin/pip3 install pyyaml numpy networkx test-generator defusedxml`.
 
