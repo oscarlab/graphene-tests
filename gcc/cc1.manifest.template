@@ -1,15 +1,13 @@
-#!$(PAL)
-
-loader.preload = file:$(SHIMPATH)
-loader.exec = file:$(GCCDIR)/cc1
+loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
+loader.exec = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/cc1
 loader.execname = cc1
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu
 loader.env.PATH = /bin:/usr/bin
-loader.debug_type = $(DEBUGTYPE)
+loader.debug_type = $(GRAPHENEDEBUG)
 
 fs.mount.lib1.type = chroot
 fs.mount.lib1.path = /lib
-fs.mount.lib1.uri = file:$(LIBCDIR)
+fs.mount.lib1.uri = file:$(GRAPHENEDIR)/Runtime
 
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
@@ -24,20 +22,18 @@ fs.mount.tmp.path = /tmp
 fs.mount.tmp.uri = file:/tmp
 
 sgx.enclave_size = 1G
+sgx.static_address = 1
 
-sgx.trusted_files.ld = file:$(LIBCDIR)/ld-linux-x86-64.so.2
-sgx.trusted_files.libc = file:$(LIBCDIR)/libc.so.6
-sgx.trusted_files.libdl = file:$(LIBCDIR)/libdl.so.2
-sgx.trusted_files.libm = file:$(LIBCDIR)/libm.so.6
-sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
-sgx.trusted_files.libpthread = file:$(LIBCDIR)/libpthread.so.0
-sgx.trusted_files.isl = file:/usr/lib/x86_64-linux-gnu/libisl.so.15
-sgx.trusted_files.mpc = file:/usr/lib/x86_64-linux-gnu/libmpc.so.3
-sgx.trusted_files.mpfr = file:/usr/lib/x86_64-linux-gnu/libmpfr.so.4
-sgx.trusted_files.gmp = file:/usr/lib/x86_64-linux-gnu/libgmp.so.10
+sgx.trusted_files.ld = file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2
+sgx.trusted_files.libc = file:$(GRAPHENEDIR)/Runtime/libc.so.6
+sgx.trusted_files.libdl = file:$(GRAPHENEDIR)/Runtime/libdl.so.2
+sgx.trusted_files.libm = file:$(GRAPHENEDIR)/Runtime/libm.so.6
+sgx.trusted_files.libpthread = file:$(GRAPHENEDIR)/Runtime/libpthread.so.0
+
+$(CC1_TRUSTED_LIBS)
 
 sgx.allowed_files.tmp = file:/tmp
 sgx.allowed_files.test_files = file:test_files
 sgx.allowed_files.inc = file:/usr/include
-sgx.allowed_files.gccinc = file:$(GCCDIR)/include
-sgx.allowed_files.gccincfixed = file:$(GCCDIR)/include-fixed
+sgx.allowed_files.gccinc = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/include
+sgx.allowed_files.gccincfixed = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/include-fixed
