@@ -29,8 +29,6 @@ endif
 %.manifest: %.manifest.template
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
-		-e 's|$$(INSTALL_DIR)|'"$(INSTALL_DIR)"'|g' \
-		-e 's|$$(INSTALL_DIR_ABSPATH)|'"$(abspath $(INSTALL_DIR))"'|g' \
 		-e 's|$$(BINUTILS_VERSION)|'"$(BINUTILS_VERSION)"'|g' \
 		-e 's|$$(GCC_MAJOR_VERSION)|'"$(GCC_MAJOR_VERSION)"'|g' \
 		-e 's|$$(CC1_TRUSTED_LIBS)|'"`cat cc1-trusted-libs`"'|g' \
@@ -40,7 +38,7 @@ endif
 # Prevent .manifest.sgx from automatically being deleted by make
 .SECONDARY: $(addsuffix .manifest.sgx, $(TOOLS))
 
-# Rules to generate the SGX-specific manifest (.manifesg.sgx), the enclave signature (.sig), and the
+# Rules to generate the SGX-specific manifest (.manifest.sgx), the enclave signature (.sig), and the
 # enclave initialization token (.token).
 %.manifest.sgx: %.manifest
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
