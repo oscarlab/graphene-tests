@@ -35,8 +35,9 @@ endif
 		-e 's|$$(LD_TRUSTED_FILES)|'"`cat ld-gcc-$(GCC_MAJOR_VERSION)-trusted-files`"'|g' \
 		$< > $@
 
-# Prevent .manifest.sgx from automatically being deleted by make
+# Prevent .manifest/.manifest.sgx from automatically being deleted by make
 .SECONDARY: $(addsuffix .manifest.sgx, $(TOOLS))
+.SECONDARY: $(addsuffix .manifest, $(TOOLS))
 
 # Rules to generate the SGX-specific manifest (.manifest.sgx), the enclave signature (.sig), and the
 # enclave initialization token (.token).
