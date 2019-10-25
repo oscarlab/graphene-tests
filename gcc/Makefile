@@ -17,11 +17,11 @@ BINUTILS_VERSION ?= $(shell ld -v | awk '{print $$NF}')
 GCC_MAJOR_VERSION ?= $(shell gcc -v 2>&1 | tail -n1 | awk '{print $$3}' | awk 'BEGIN {FS="."}{print $$1}')
 GCC_LIB_PATH ?= /usr/lib/gcc/x86_64-linux-gnu
 
-.PHONY: default
+.PHONY: all
 ifeq ($(SGX),1)
-default: $(addsuffix .token, $(TOOLS)) pal_loader
+all: $(addsuffix .token, $(TOOLS)) pal_loader
 else
-default: $(addsuffix .manifest, $(TOOLS)) pal_loader
+all: $(addsuffix .manifest, $(TOOLS)) pal_loader
 endif
 
 %.manifest: %.manifest.template
@@ -34,8 +34,10 @@ endif
 		-e 's|$$(LD_TRUSTED_FILES)|'"`cat ld-gcc-$(GCC_MAJOR_VERSION)-trusted-files`"'|g' \
 		$< > $@
 
-# Prevent .manifest.sgx from automatically being deleted by make
+# Prevent .manifest/.manifest.sgx from automatically being deleted by make
 .SECONDARY: $(addsuffix .manifest.sgx, $(TOOLS))
+.SECONDARY: $(addsuffix .manifest, $(TOOLS))
+.SECONDARY: gcc.sig
 
 # Rules to generate the SGX-specific manifest (.manifest.sgx), the enclave signature (.sig), and the
 # enclave initialization token (.token).
@@ -87,8 +89,8 @@ cc1-ldd: $(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/cc1
 		echo -n "sgx.trusted_files.$$N = file:$$P\\\\n"; \
 	done > $@
 
-.PHONY: regression
-regression: default
+.PHONY: check
+check: all
 	@echo "\n\nCompile hello.c:"
 	./pal_loader gcc.manifest test_files/helloworld.c -o test_files/hello
 	@chmod 755 test_files/hello
@@ -116,10 +118,9 @@ regression: default
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.sig *.token
+	$(RM) *.manifest *.manifest.sgx *.sig *.token pal_loader
 	$(RM) *-deps *-ldd *-trusted-libs
 	$(RM) test_files/bzip2.copy
 
 .PHONY: distclean
 distclean: clean
-	$(RM) pal_loader
