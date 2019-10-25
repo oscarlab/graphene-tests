@@ -10,10 +10,10 @@ The Makefile and the template manifest contain comments to hopefully make them e
 
 # Quick Start
 
-To run the regression tests execute ```make regression```. To do the same for SGX, execute ```SGX=1
-make regression```. The regression tests build three sample programs - helloworld.c, bzip2.c and
-gzip.c - and test their functionality.
+To run the regression tests execute ```make check```. To do the same for SGX, execute ```SGX=1 make
+check```. The regression tests build three sample programs - helloworld.c, bzip2.c and gzip.c - and
+test their functionality.
 
-By looking at the Makefile "regression" target you can see how gcc is invoked to compile individual
+By looking at the Makefile "check" target you can see how gcc is invoked to compile individual
 source files under the hood. If you want to compile different and/or more complex applications, you
 would likely need to tweak the manifest files to whitelist additional files.
