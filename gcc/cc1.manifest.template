@@ -1,5 +1,5 @@
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
-loader.exec = file:/usr/lib/gcc/x86_64-linux-gnu/$(GCC_MAJOR_VERSION)/cc1
+loader.exec = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/cc1
 loader.execname = cc1
 loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu
 loader.env.PATH = /bin:/usr/bin
@@ -35,5 +35,5 @@ $(CC1_TRUSTED_LIBS)
 sgx.allowed_files.tmp = file:/tmp
 sgx.allowed_files.test_files = file:test_files
 sgx.allowed_files.inc = file:/usr/include
-sgx.allowed_files.gccinc = file:/usr/lib/gcc/x86_64-linux-gnu/$(GCC_MAJOR_VERSION)/include
-sgx.allowed_files.gccincfixed = file:/usr/lib/gcc/x86_64-linux-gnu/$(GCC_MAJOR_VERSION)/include-fixed
+sgx.allowed_files.gccinc = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/include
+sgx.allowed_files.gccincfixed = file:$(GCC_LIB_PATH)/$(GCC_MAJOR_VERSION)/include-fixed
