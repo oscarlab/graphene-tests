@@ -28,7 +28,7 @@ fs.mount.usr.uri = file:/usr
 
 fs.mount.etc.type = chroot
 fs.mount.etc.path = /etc
-fs.mount.etc.uri = file:
+fs.mount.etc.uri = file:/etc
 
 fs.mount.tmp.type = chroot
 fs.mount.tmp.path = /tmp
@@ -88,4 +88,5 @@ sgx.trusted_files.hosts = file:hosts
 sgx.trusted_files.resolv = file:resolv.conf
 sgx.trusted_files.gai = file:gai.conf
 
+sgx.allowed_files.etc = file:/etc
 sgx.allowed_files.tmp = file:/tmp
