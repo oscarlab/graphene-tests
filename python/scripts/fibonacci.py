@@ -15,7 +15,7 @@ def fib2(n):
     if n < 2:
         return n
     a, b = 1, 0
-    for i in xrange(n-1):
+    for i in range(n-1):
         a, b = a+b, a
     return a
 

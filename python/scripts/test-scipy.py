@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import timeit
 
@@ -9,8 +9,7 @@ setup = "import numpy;\
 count = 5
 
 t = timeit.Timer("linalg.cholesky(z, lower=True)", setup=setup)
-print "cholesky:", t.timeit(count)/count, "sec"
+print("cholesky: " + str(t.timeit(count)/count) + "sec")
 
 t = timeit.Timer("linalg.svd(z)", setup=setup)
-print "svd:", t.timeit(count)/count, "sec"
-print
+print("svd: " + str(t.timeit(count)/count) + "sec")

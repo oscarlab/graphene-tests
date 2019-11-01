@@ -14,7 +14,7 @@ rm OUTPUT
 
 echo -e "\n\nRunning test-numpy.py:"
 ./pal_loader python.manifest scripts/test-numpy.py > OUTPUT
-grep -q "maxint: " OUTPUT && echo "[ SUCCESS ]"
+grep -q "dot: " OUTPUT && echo "[ SUCCESS ]"
 rm OUTPUT
 
 echo -e "\n\nRunning test-scipy.py:"

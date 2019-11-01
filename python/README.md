@@ -1,9 +1,8 @@
 # Python example
 
-This directory contains an example for running Python 2.7 in Graphene, including
+This directory contains an example for running Python 3 in Graphene, including
 the Makefile and a template for generating the manifest. The application is
-tested on Ubuntu 16.04, with both normal Linux and SGX platforms. Python 3 is not
-yet tested in Graphene.
+tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
 
 # Generating the manifest
 
@@ -12,7 +11,7 @@ yet tested in Graphene.
 For generating the manifest and running the test scripts, please run the following
 command to install the required Python packages (Ubuntu-specific):
 
-    sudo apt-get install -f python-numpy python-scipy
+    sudo apt-get install -f python3-numpy python3-scipy
 
 ## Building for Linux
 
@@ -26,11 +25,15 @@ Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
 By default, the `make` command creates the manifest for the Python binary from
 the system installation. If you have a local installation, you may create the
-manifest with the `PYTHONHOME` variable set accordingly. For example:
+manifest with the `PYTHONPATH` variable set accordingly. You can also specify
+a particular version of Python. For example:
 
 ```
-make PYTHONHOME=<install path>/lib/python2.7 SGX=1
+make PYTHONPATH=<python install path> PYTHONVERSION=python3.2 SGX=1
 ```
+
+By default, `PYTHONPATH=/usr` and `PYTHONVERSION=python3.5`.
+
 
 # Run Python with Graphene
 

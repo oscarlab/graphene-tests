@@ -1,11 +1,14 @@
-import sys,urllib2
+#!/usr/bin/env python3
 
-request = urllib2.Request("http://" + sys.argv[1] + ":" + sys.argv[2] + "/index.html")
-opener = urllib2.build_opener()
+import sys
+import urllib.request
+
+request = urllib.request.Request("http://" + sys.argv[1] + ":" + sys.argv[2] + "/index.html")
+opener = urllib.request.build_opener()
 response = opener.open(request, timeout=10)
 while True:
     data = response.read(1024)
     if data:
-        sys.stdout.write(data)
+        print(data)
     else:
         break
