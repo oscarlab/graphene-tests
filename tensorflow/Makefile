@@ -2,7 +2,7 @@ manifests = $(addsuffix .manifest,label_image)
 exec_target = $(manifests)
 target = label_image
 
-GRAPHENEDIR=../../../../..
+GRAPHENEDIR ?= ../../../../..
 TF_DIR ?= tensorflow
 BAZEL_BIN ?= $(HOME)/bin/bazel
 
@@ -37,10 +37,10 @@ labels.txt: tensorflow/tensorflow/contrib/lite/java/ovic/src/testdata/labels.txt
 image.bmp: tensorflow/tensorflow/contrib/lite/examples/label_image/testdata/grace_hopper.bmp
 	cp $^ $@
 
-../../../../../Runtime/libgcc_s.so.1:
+$(GRAPHENEDIR)/Runtime/libgcc_s.so.1:
 	cp /lib/x86_64-linux-gnu/libgcc_s.so.1 $@
 
-../../../../../Runtime/libstdc++.so.6:
+$(GRAPHENEDIR)/Runtime/libstdc++.so.6:
 	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $@
 
 label_image.manifest: label_image.manifest.template
@@ -52,7 +52,7 @@ label_image.manifest.sgx: libtensorflow_framework.so label_image
 label_image.manifest.sgx: inception_v3.tflite
 label_image.manifest.sgx: labels.txt
 label_image.manifest.sgx: image.bmp
-label_image.manifest.sgx: ../../../../../Runtime/libgcc_s.so.1 ../../../../../Runtime/libstdc++.so.6
+label_image.manifest.sgx: $(GRAPHENEDIR)/Runtime/libgcc_s.so.1 $(GRAPHENEDIR)/Runtime/libstdc++.so.6
 
 label_image.manifest.sgx: label_image.manifest label_image
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
@@ -63,11 +63,14 @@ label_image.manifest.sgx: label_image.manifest label_image
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output label_image.token -sig label_image.sig
 
+pal_loader:
+	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
 .PHONY: check
 ifeq ($(SGX),1)
-check: label_image.manifest.sgx
+check: label_image.manifest.sgx pal_loader
 else
-check: label_image.manifest
+check: label_image.manifest pal_loader
 endif
 	./pal_loader ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
 
