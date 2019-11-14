@@ -19,9 +19,6 @@ loader.debug_type = $(GRAPHENEDEBUG)
 # Environment variables for Python
 loader.env.LD_LIBRARY_PATH = $(PYTHONHOME)/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu
 loader.env.PATH = $(PYTHONHOME)/bin:/usr/bin:/bin
-#loader.env.USERNAME =
-#loader.env.HOME =
-#loader.env.PWD =
 loader.env.PYTHONHOME = $(PYTHONHOME)
 loader.env.PYTHONPATH = $(PYTHONHOME):$(PYTHONHOME)/plat-x86_64-linux-gnu:$(PYTHONDISTHOME):$(PYTHONHOME)/lib-dynload
 
@@ -57,6 +54,17 @@ fs.mount.pydisthome.uri = file:$(PYTHONDISTHOME)
 fs.mount.tmp.type = chroot
 fs.mount.tmp.path = /tmp
 fs.mount.tmp.uri = file:/tmp
+
+# Mount /etc
+fs.mount.etc.type = chroot
+fs.mount.etc.path = /etc
+fs.mount.etc.uri = file:/etc
+
+# Grahene general options
+
+# Graphene creates stacks of 256KB by default. It is not enough for SciPy/NumPy
+# packages, e.g., libopenblas dependency assumes more than 512KB-sized stacks.
+sys.stack.size = 2M
 
 # SGX general options
 
@@ -94,5 +102,6 @@ $(PYTHON_TRUSTED_LIBS)
 # SGX untrusted (allowed) files/directories
 sgx.allowed_files.scripts = file:scripts
 sgx.allowed_files.tmp = file:/tmp
+sgx.allowed_files.etc = file:/etc
 sgx.allowed_files.pyhome = file:$(PYTHONHOME)
 sgx.allowed_files.pydisthome = file:$(PYTHONDISTHOME)

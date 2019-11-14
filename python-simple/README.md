@@ -6,13 +6,6 @@ tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
 
 # Generating the manifest
 
-## Installing prerequisites
-
-For generating the manifest and running the test scripts, please run the following
-command to install the required Python packages (Ubuntu-specific):
-
-    sudo apt-get install -f python3-numpy python3-scipy
-
 ## Building for Linux
 
 Run `make` (non-debug) or `make DEBUG=1` (debug) in the directory.
@@ -43,14 +36,15 @@ Without SGX:
 ```
 ./pal_loader python.manifest scripts/helloworld.py
 ./pal_loader python.manifest scripts/fibonacci.py
-./pal_loader python.manifest scripts/test-numpy.py
-./pal_loader python.manifest scripts/test-scipy.py
 ```
 
 With SGX:
 ```
 SGX=1 ./pal_loader python.manifest scripts/helloworld.py
 SGX=1 ./pal_loader python.manifest scripts/fibonacci.py
-SGX=1 ./pal_loader python.manifest scripts/test-numpy.py
-SGX=1 ./pal_loader python.manifest scripts/test-scipy.py
+```
+
+You can also manually run included tests:
+```
+SGX=1 ./run-tests.sh
 ```

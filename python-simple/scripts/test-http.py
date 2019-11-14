@@ -9,6 +9,6 @@ response = opener.open(request, timeout=10)
 while True:
     data = response.read(1024)
     if data:
-        print(data)
+        print(data.decode())
     else:
         break
