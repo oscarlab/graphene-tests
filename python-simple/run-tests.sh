@@ -2,6 +2,24 @@
 
 set -e
 
+echo -e "\n\nRunning helloworld.py:"
+./pal_loader python.manifest scripts/helloworld.py
+
+echo -e "\n\nRunning fibonacci.py:"
+./pal_loader python.manifest scripts/fibonacci.py
+
+echo -e "\n\nRunning HTTP server dummy-web-server.py in the background:"
+./pal_loader python.manifest scripts/dummy-web-server.py 8005 & echo $! > server.PID
+sleep 30  # Graphene-SGX takes a lot of time to initialize
+
+echo -e "\n\nRunning HTTP client test-http.py:"
+./pal_loader python.manifest scripts/test-http.py localhost 8005
+kill `cat server.PID`
+
+exit
+
+
+
 # === hellworld ===
 echo -e "\n\nRunning helloworld.py:"
 ./pal_loader python.manifest scripts/helloworld.py > OUTPUT

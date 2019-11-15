@@ -24,7 +24,7 @@ GRAPHENEDIR ?= ../../../../..
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
 else
-GRAPHENEDEBUG = none
+GRAPHENEDEBUG = inline  # TODO: ONLY FOR TEST PURPOSES
 endif
 
 .PHONY: all
@@ -113,6 +113,16 @@ pal_loader:
 
 .PHONY: regression
 regression: all
+	./pal_loader python.manifest scripts/helloworld.py
+	./pal_loader python.manifest scripts/fibonacci.py
+
+	./pal_loader python.manifest scripts/dummy-web-server.py 8005 &
+	sleep 30  # Graphene-SGX takes a lot of time to initialize
+	./pal_loader python.manifest scripts/test-http.py localhost 8005
+	-killall -9 pal-Linux
+	-killall -9 pal-Linux-SGX
+
+	exit 0
 	./run-tests.sh > OUTPUT_TEST 2> /dev/null
 	@sleep 5  # to make sure Python processes finish under Graphene-SGX
 	@grep -q "Success 1/3" OUTPUT_TEST
