@@ -24,7 +24,7 @@ GRAPHENEDIR ?= ../../../../..
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
 else
-GRAPHENEDEBUG = inline  # TODO: ONLY FOR TEST PURPOSES
+GRAPHENEDEBUG = none  # TODO: ONLY FOR TEST PURPOSES
 endif
 
 .PHONY: all
