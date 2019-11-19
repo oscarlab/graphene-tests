@@ -111,6 +111,9 @@ test: all $(INSTALLDIR)/lmbench-test-ci.sh
 $(INSTALLDIR)/pal_loader:
 	ln -s $(GRAPHENEDIR_FROM_INSTALLDIR)/Runtime/pal_loader $@
 
-.PHONY: clean
+.PHONY: clean distclean
 clean:
+	[ ! -d $(INSTALLDIR) ] || (cd $(INSTALLDIR) && $(RM) *.manifest *.manifest.sgx *.sig *.token)
+
+distclean: clean
 	$(MAKE) -C $(LMBENCHDIR) clean
