@@ -24,8 +24,8 @@ fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime
 # SGX general options
 
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave size
-# must be specified during signing. If R needs more virtual memory than the
-# enclave size, Graphene will not be able to allocate it.
+# must be specified during signing. If the program needs more virtual memory than
+# the enclave size, Graphene will not be able to allocate it.
 sgx.enclave_size = 256M
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave

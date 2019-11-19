@@ -28,12 +28,12 @@ fi
 export ENOUGH TIMING_O LOOP_O
 
 if [ X$FILE = X ]
-then	
+then
 	FILE=/tmp/XXX
 	touch $FILE || echo Can not create $FILE
 fi
 if [ X$MB = X ]
-then	
+then
 	MB=8
 fi
 AVAILKB=`expr $MB \* 1024`
@@ -53,7 +53,7 @@ done
 
 
 if [ X$FSDIR = X ]
-then	
+then
 	FSDIR=/tmp/lat_fs
 fi
 MP=N
@@ -94,13 +94,13 @@ echo \[VERSION: `uname -v`] 1>&2
 echo \[`date`] 1>&2
 echo \[`uptime`] 1>&2
 netstat -i | while read i
-do	
+do
 	echo \[net: "$i"] 1>&2
 	set `echo $i`
 	case $1 in
 	    *ame)	;;
 	    *)		ifconfig $1 | while read i
-			do 
+			do
 				echo \[if: "$i"] 1>&2
 			done
 			;;
@@ -108,7 +108,7 @@ do
 done
 
 mount | while read i
-do	
+do
 	echo \[mount: "$i"] 1>&2
 done
 
@@ -116,7 +116,7 @@ STAT=$FSDIR/lmbench
 mkdir $FSDIR 2>/dev/null
 touch $STAT 2>/dev/null
 if [ ! -f $STAT ]
-then	
+then
 	echo "Can't make a file - $STAT - in $FSDIR"
 	touch $STAT
 	exit 1
@@ -148,7 +148,7 @@ function af_unix {
 #AF_UNIX
 	echo AF_UNIX socket latency
 	for i in `seq 1 $N_RUNS`
-	do	
+	do
 		run lat_unix
 	done
 }
@@ -156,7 +156,7 @@ function af_unix {
 
 function wr_bw {
 	for i in `seq 1 $N_RUNS`
-	do	
+	do
 		rm -f $FILE
 		run lmdd label="File $FILE write bandwidth:" of=$FILE move=${MB}m fsync=1 print=3
 	done
