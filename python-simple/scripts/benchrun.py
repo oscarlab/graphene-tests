@@ -10,7 +10,7 @@ See fibonacci.py for example.
 """
 
 import sys
-if sys.platform=='win32':
+if sys.platform == 'win32':
     from time import clock
 else:
     from time import time as clock
@@ -97,7 +97,7 @@ class Benchmark:
         if self.reference:
             ts += " (x faster than " + (str(self.reference_value)) + ")"
         print("  " + "   ".join([str(r).ljust(colwidth) for r in self.pnames + [ts]]))
-        print("-"*79)
+        print("-" * 79)
 
         rows = []
         for vals in self.results:

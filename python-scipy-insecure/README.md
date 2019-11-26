@@ -16,7 +16,7 @@ modifying Python files. For secure Python usage, see the `python-simple` example
 For generating the manifest and running the test scripts, please run the following
 command to install the required Python packages (Ubuntu-specific):
 
-    sudo apt-get install -f python3-numpy python3-scipy
+    sudo apt-get install libnss-mdns python3-numpy python3-scipy
 
 ## Building for Linux
 

@@ -1,7 +1,7 @@
 # Python3 manifest example
 #
 # This manifest was prepared and tested on Ubuntu 16.04/18.04 and tested with
-# Python v3.5 and v3.6.
+# Python 3.5 and 3.6.
 #
 # Python must be run with the pal_loader:
 #

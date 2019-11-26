@@ -9,7 +9,7 @@ setup = "import numpy;\
 count = 5
 
 t = timeit.Timer("linalg.cholesky(z, lower=True)", setup=setup)
-print("cholesky: " + str(t.timeit(count)/count) + "sec")
+print("linalg.cholesky: " + str(t.timeit(count)/count) + "sec")
 
 t = timeit.Timer("linalg.svd(z)", setup=setup)
-print("svd: " + str(t.timeit(count)/count) + "sec")
+print("linalg.svd: " + str(t.timeit(count)/count) + "sec")

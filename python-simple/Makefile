@@ -123,10 +123,9 @@ python.token: python.sig
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
-.PHONY: regression
-regression: all
+.PHONY: check
+check: all
 	./run-tests.sh > OUTPUT_TEST 2> /dev/null
-	@sleep 5  # to make sure Python processes finish under Graphene-SGX
 	@grep -q "Success 1/3" OUTPUT_TEST
 	@grep -q "Success 2/3" OUTPUT_TEST
 	@grep -q "Success 3/3" OUTPUT_TEST

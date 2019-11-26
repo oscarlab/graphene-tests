@@ -56,7 +56,7 @@ PY_LIBS = $(PYTHONHOME)/lib-dynload/_hashlib.cpython-$(PYTHONSHORTVERSION)m-x86_
 PY_LIBS_TRUSTED_LIBS = "sgx.trusted_files.hashlib = file:$(PYTHONHOME)/lib-dynload/_hashlib.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
 	  "sgx.trusted_files.ctypes = file:$(PYTHONHOME)/lib-dynload/_ctypes.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
 	  "sgx.trusted_files.ssl = file:$(PYTHONHOME)/lib-dynload/_ssl.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
-	  "sgx.trusted_files.lalack_lite = file:$(PYTHONDISTHOME)/numpy/linalg/lapack_lite.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
+	  "sgx.trusted_files.lapack_lite = file:$(PYTHONDISTHOME)/numpy/linalg/lapack_lite.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
 	  "sgx.trusted_files.multiarray = file:$(PYTHONDISTHOME)/numpy/core/multiarray.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n" \
 	  "sgx.trusted_files.sparsetools = file:$(PYTHONDISTHOME)/scipy/sparse/_sparsetools.cpython-$(PYTHONSHORTVERSION)m-x86_64-linux-gnu.so\\\\n"
 
@@ -109,8 +109,8 @@ python.token: python.sig
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
-.PHONY: regression
-regression: all
+.PHONY: check
+check: all
 	./pal_loader python.manifest scripts/test-numpy.py > OUTPUT 2> /dev/null
 	@sleep 1  # to make sure Bash child processes flush output under Graphene-SGX
 	@grep -q "dot: " OUTPUT && echo "[ Success 1/2 ]"
@@ -123,7 +123,8 @@ regression: all
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader
+	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT*
+	$(RM) -r scripts/__pycache__
 
 .PHONY: distclean
 distclean: clean

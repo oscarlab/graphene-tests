@@ -3,9 +3,16 @@
 This directory contains an example for running Python 3 in Graphene, including
 the Makefile and a template for generating the manifest. The application is
 tested on Ubuntu 16.04 and Ubuntu 18.04, with both normal Linux and SGX
-platforms. The tested versions of Python are v3.5 and v3.6.
+platforms. The tested versions of Python are 3.5 and 3.6.
 
 # Generating the manifest
+
+## Installing prerequisites
+
+For generating the manifest and running the test scripts, please run the following
+command to install the required utility packages (Ubuntu-specific):
+
+    sudo apt-get install libnss-mdns
 
 ## Building for Linux
 

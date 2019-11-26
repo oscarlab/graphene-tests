@@ -60,7 +60,7 @@ fs.mount.etc.type = chroot
 fs.mount.etc.path = /etc
 fs.mount.etc.uri = file:/etc
 
-# Grahene general options
+# Graphene general options
 
 # Graphene creates stacks of 256KB by default. It is not enough for SciPy/NumPy
 # packages, e.g., libopenblas dependency assumes more than 512KB-sized stacks.
