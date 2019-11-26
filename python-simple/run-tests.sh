@@ -26,5 +26,3 @@ echo >> OUTPUT2  # include newline since wget doesn't add it
 diff -q OUTPUT1 OUTPUT2 && echo "[ Success 3/3 ]"
 kill `cat server.PID`
 rm -f OUTPUT1 OUTPUT2 server.PID
-
-sleep 5  # to make sure Python processes finish under Graphene-SGX
