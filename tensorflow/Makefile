@@ -9,18 +9,23 @@ BAZEL_BIN ?= $(HOME)/bin/bazel
 # tags/v1.9.0
 GIT_COMMIT ?= 25c197e02393bd44f50079945409009dd4d434f8
 
-tensorflow/configure:
-	git clone https://github.com/tensorflow/tensorflow
-	cd tensorflow && git checkout $(GIT_COMMIT)
+PHONY: default
+ifeq ($(SGX),1)
+default: label_image.manifest.sgx
+endif
+default: libtensorflow_framework.so label_image image.bmp labels.txt inception_v3.tflite
 
-tensorflow/bazel-bin/tensorflow/contrib/lite/examples/label_image/label_image: tensorflow/configure
-	cd tensorflow && $(BAZEL_BIN) build tensorflow/contrib/lite/examples/label_image
+$(TF_DIR)/configure:
+	git clone https://github.com/tensorflow/tensorflow
+	cd $(TF_DIR) && git checkout $(GIT_COMMIT)
+
+$(TF_DIR)/bazel-bin/tensorflow/contrib/lite/examples/label_image/label_image: $(TF_DIR)/configure
+	cd $(TF_DIR) && $(BAZEL_BIN) build tensorflow/contrib/lite/examples/label_image
 
 label_image: $(TF_DIR)/bazel-bin/tensorflow/contrib/lite/examples/label_image/label_image
 	cp $^ .
 
 libtensorflow_framework.so: label_image
-	$(RM) $@
 	cp $(TF_DIR)/bazel-bin/tensorflow/libtensorflow_framework.so $@
 
 INCEPTION_HASH=b1a1f91276e48a9ddf0cb0d854f044ebfbf985dc2c2cedceb52b3d668894299a
@@ -31,10 +36,10 @@ inception_v3.tflite:
 	mv -f tmp inception_v3_2018_04_27.tgz
 	tar xfz inception_v3_2018_04_27.tgz
 
-labels.txt: tensorflow/tensorflow/contrib/lite/java/ovic/src/testdata/labels.txt
+labels.txt: $(TF_DIR)/tensorflow/contrib/lite/java/ovic/src/testdata/labels.txt
 	cp $^ $@
 
-image.bmp: tensorflow/tensorflow/contrib/lite/examples/label_image/testdata/grace_hopper.bmp
+image.bmp: $(TF_DIR)/tensorflow/contrib/lite/examples/label_image/testdata/grace_hopper.bmp
 	cp $^ $@
 
 $(GRAPHENEDIR)/Runtime/libgcc_s.so.1:
@@ -43,18 +48,17 @@ $(GRAPHENEDIR)/Runtime/libgcc_s.so.1:
 $(GRAPHENEDIR)/Runtime/libstdc++.so.6:
 	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $@
 
+label_image.manifest: libtensorflow_framework.so label_image
+label_image.manifest: inception_v3.tflite
+label_image.manifest: labels.txt
+label_image.manifest: image.bmp
+label_image.manifest: $(GRAPHENEDIR)/Runtime/libgcc_s.so.1 $(GRAPHENEDIR)/Runtime/libstdc++.so.6
 label_image.manifest: label_image.manifest.template
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		$< > $@
 
-label_image.manifest.sgx: libtensorflow_framework.so label_image
-label_image.manifest.sgx: inception_v3.tflite
-label_image.manifest.sgx: labels.txt
-label_image.manifest.sgx: image.bmp
-label_image.manifest.sgx: $(GRAPHENEDIR)/Runtime/libgcc_s.so.1 $(GRAPHENEDIR)/Runtime/libstdc++.so.6
-
-label_image.manifest.sgx: label_image.manifest label_image
+label_image.manifest.sgx: label_image.manifest
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
 		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
@@ -63,16 +67,28 @@ label_image.manifest.sgx: label_image.manifest label_image
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
 		-output label_image.token -sig label_image.sig
 
-pal_loader:
-	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
-
 .PHONY: check
 ifeq ($(SGX),1)
-check: label_image.manifest.sgx pal_loader
+check: label_image.manifest.sgx
+	$(GRAPHENEDIR)/Runtime/pal-Linux-SGX ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
 else
-check: label_image.manifest pal_loader
+check: default
+	./label_image -m inception_v3.tflite -i image.bmp -t 1
 endif
-	./pal_loader ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
+
+.PHONY: run-native
+run-native: default
+	./label_image -m inception_v3.tflite -i image.bmp -t 1
+
+.PHONY: run-graphene
+ifeq ($(SGX),1)
+run-graphene: label_image.manifest.sgx
+	$(GRAPHENEDIR)/Runtime/pal-Linux-SGX ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
+else
+run-graphene: label_image.manifest
+	$(GRAPHENEDIR)/Runtime/pal-Linux ./label_image.manifest -m inception_v3.tflite -i image.bmp -t 1
+endif
+
 
 .PHONY: clean
 clean:
@@ -82,7 +98,7 @@ clean:
 distclean: clean
 	$(RM) -r label_image
 	$(RM) inception_v3_2018_04_27.tgz inception_v3.pb inception_v3.tflite labels.txt image.bmp
-	$(RM) -r tensorflow
+	$(RM) -r $(TF_DIR) libtensorflow_framework.so
 
 BAZEL_INSTALLER_HASH=17ab70344645359fd4178002f367885e9019ae7507c9c1ade8220f3628383444
 .PHONY: install-dependencies-ubuntu

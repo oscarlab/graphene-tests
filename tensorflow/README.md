@@ -7,6 +7,6 @@ Known limitations:
 
 Install build dependencies with `make install-dependencies-ubuntu`.
 
-Build everything with `SGX=1 make all sgx-tokens`.
+Build everything with `make` (no SGX) or `SGX=1 make` (for SGX).
 
-Run the example with `SGX=1 make check`.
+`make run-native` labels a single image running native Tensorflow. `make run-graphene` executes the same program with Graphene. `SGX=1 make run-graphene` executes the label image program on Graphene with SGX.
