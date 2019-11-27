@@ -5,13 +5,13 @@ Known limitations:
 - Tested on Ubuntu 16.04 with Graphene [commit 030a088](https://github.com/oscarlab/graphene/tree/030a0888926f315710da94ee6f855c466059cf6c). Ubuntu 18.04 should work, but have not tested.
 - Currently single threaded. Multi-threaded not tested.
 
-Install build dependencies with `make install-dependencies-ubuntu`.
+To install build dependencies on Ubuntu 16.04 there is a convenience target invoked with `make install-dependencies-ubuntu`. This also serves as a starting point to figure out which packages to install on newer releases of Ubuntu.
 
-To build Tensorflow and Graphene artifacts ...
+To build Tensorflow and Graphene artifacts:
 - without SGX do `make`
 - with SGX do `make SGX=1 `
 
-To run the image labeling example of Tensorflow ...
-- do `make run-native`
-- on Graphene do `make run-graphene`
-- on Graphene with SGX do `make SGX=1 run-graphene`
+To run the image labeling example of Tensorflow:
+- without Graphene do `make run-native`
+- with Graphene do `make run-graphene`
+- with Graphene-SGX do `make SGX=1 run-graphene`

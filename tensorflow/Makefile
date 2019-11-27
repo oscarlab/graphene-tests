@@ -10,10 +10,10 @@ BAZEL_BIN ?= $(HOME)/bin/bazel
 GIT_COMMIT ?= 25c197e02393bd44f50079945409009dd4d434f8
 
 PHONY: default
+default: label_image.manifest
 ifeq ($(SGX),1)
 default: label_image.manifest.sgx
 endif
-default: label_image.manifest
 
 $(TF_DIR)/configure:
 	git clone https://github.com/tensorflow/tensorflow
@@ -48,10 +48,7 @@ $(GRAPHENEDIR)/Runtime/libgcc_s.so.1:
 $(GRAPHENEDIR)/Runtime/libstdc++.so.6:
 	cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $@
 
-label_image.manifest: libtensorflow_framework.so label_image
-label_image.manifest: inception_v3.tflite
-label_image.manifest: labels.txt
-label_image.manifest: image.bmp
+label_image.manifest: libtensorflow_framework.so label_image inception_v3.tflite labels.txt image.bmp
 label_image.manifest: $(GRAPHENEDIR)/Runtime/libgcc_s.so.1 $(GRAPHENEDIR)/Runtime/libstdc++.so.6
 label_image.manifest: label_image.manifest.template
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
@@ -68,27 +65,16 @@ label_image.manifest.sgx: label_image.manifest
 		-output label_image.token -sig label_image.sig
 
 .PHONY: check
-ifeq ($(SGX),1)
-check: label_image.manifest.sgx
-	$(GRAPHENEDIR)/Runtime/pal-Linux-SGX ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
-else
 check: default
-	$(GRAPHENEDIR)/Runtime/pal-Linux ./label_image.manifest -m inception_v3.tflite -i image.bmp -t 1
-endif
+	$(GRAPHENEDIR)/Runtime/pal_loader ./label_image -m inception_v3.tflite -i image.bmp -t 1
 
 .PHONY: run-native
 run-native: default
 	./label_image -m inception_v3.tflite -i image.bmp -t 1
 
 .PHONY: run-graphene
-ifeq ($(SGX),1)
-run-graphene: label_image.manifest.sgx
-	$(GRAPHENEDIR)/Runtime/pal-Linux-SGX ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
-else
-run-graphene: label_image.manifest
-	$(GRAPHENEDIR)/Runtime/pal-Linux ./label_image.manifest -m inception_v3.tflite -i image.bmp -t 1
-endif
-
+run-graphene: default
+	$(GRAPHENEDIR)/Runtime/pal_loader ./label_image -m inception_v3.tflite -i image.bmp -t 1
 
 .PHONY: clean
 clean:
