@@ -13,7 +13,7 @@ PHONY: default
 ifeq ($(SGX),1)
 default: label_image.manifest.sgx
 endif
-default: libtensorflow_framework.so label_image image.bmp labels.txt inception_v3.tflite
+default: label_image.manifest
 
 $(TF_DIR)/configure:
 	git clone https://github.com/tensorflow/tensorflow
@@ -73,7 +73,7 @@ check: label_image.manifest.sgx
 	$(GRAPHENEDIR)/Runtime/pal-Linux-SGX ./label_image.manifest.sgx -m inception_v3.tflite -i image.bmp -t 1
 else
 check: default
-	./label_image -m inception_v3.tflite -i image.bmp -t 1
+	$(GRAPHENEDIR)/Runtime/pal-Linux ./label_image.manifest -m inception_v3.tflite -i image.bmp -t 1
 endif
 
 .PHONY: run-native
