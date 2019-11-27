@@ -165,6 +165,16 @@ $(RANDOM_DIR)/%.html:
 .PHONY: testdata
 testdata: $(TEST_DATA)
 
+# Targets to run Nginx
+
+.PHONY: start-native-server
+start-native-server: all
+	$(INSTALL_DIR)/sbin/nginx -c conf/nginx-graphene.conf
+
+.PHONY: start-graphene-server
+start-graphene-server: all
+	./pal_loader nginx.manifest -c conf/nginx-graphene.conf
+
 .PHONY: clean
 clean:
 	$(RM) *.manifest *.manifest.sgx *.token *.sig pal_loader OUTPUT result-* nginx-ldd tmp

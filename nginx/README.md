@@ -37,3 +37,11 @@ kill -SIGINT %%
 # you can also test the server using other utilities like wget
 wget http://127.0.0.1:8002/random/10K.1.html
 ```
+
+Alternatively, to run the Nginx server, use one of the following commands:
+
+```
+make start-native-server
+make start-graphene-server
+SGX=1 make start-graphene-server
+```
