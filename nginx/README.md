@@ -43,5 +43,5 @@ Alternatively, to run the Nginx server, use one of the following commands:
 ```
 make start-native-server
 make start-graphene-server
-SGX=1 make start-graphene-server
+make SGX=1 start-graphene-server
 ```
