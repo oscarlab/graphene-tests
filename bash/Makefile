@@ -35,8 +35,9 @@ endif
 
 # We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc
 # binaries are already listed in the manifest template, so we can skip them
-# from the ldd results
-GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libutil libpthread
+# from the ldd results. This list also contains some runtime deps of Bash.
+GLIBC_DEPS = linux-vdso /lib64/ld-linux-x86-64 libc libm librt libdl libutil libpthread \
+			 libselinux libpcre libacl libattr
 
 # Listing all Bash dependencies, besides Glibc libraries
 .INTERMEDIATE: $(addsuffix .deps,bash $(PROGRAMS))

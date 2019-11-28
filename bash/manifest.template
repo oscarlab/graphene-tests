@@ -65,6 +65,12 @@ sgx.trusted_files.libnsscompat = file:/lib/x86_64-linux-gnu/libnss_compat.so.2
 sgx.trusted_files.libnssfiles = file:/lib/x86_64-linux-gnu/libnss_files.so.2
 sgx.trusted_files.libnssnis = file:/lib/x86_64-linux-gnu/libnss_nis.so.2
 
+# Additional libs opened by Bash at runtime
+sgx.trusted_files.libselinux1 = file:/lib/x86_64-linux-gnu/libselinux.so.1
+sgx.trusted_files.libpcre = file:/lib/x86_64-linux-gnu/libpcre.so.3
+sgx.trusted_files.libacl = file:/lib/x86_64-linux-gnu/libacl.so.1
+sgx.trusted_files.libattr = file:/lib/x86_64-linux-gnu/libattr.so.1
+
 # Other required libraries
 $(TRUSTED_LIBS)
 
