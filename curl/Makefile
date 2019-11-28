@@ -27,7 +27,7 @@ all: curl.token
 endif
 
 # curl dependencies (generated from ldd). For SGX, the manifest needs to list all the libraries
-# loaded during execution, so that the signer can include the file checksums.
+# loaded during execution, so that the signer can include the file hashes.
 
 # We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc binaries are
 # already listed in the manifest template, so we can skip them from the ldd results.
