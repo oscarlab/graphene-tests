@@ -1,4 +1,4 @@
-# Use one of these commands to build the manifest for nodejs:
+# Use one of these commands to build the manifest for Node.js:
 #
 # - make
 # - make DEBUG=1
@@ -26,7 +26,7 @@ ifeq ($(SGX),1)
 all: nodejs.token
 endif
 
-# nodejs dependencies (generated from ldd). For SGX, the manifest needs to list all the libraries
+# Node.js dependencies (generated from ldd). For SGX, the manifest needs to list all the libraries
 # loaded during execution, so that the signer can include the file hashes.
 
 # We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc binaries are
@@ -34,14 +34,14 @@ endif
 GLIBC_DEPS = linux-vdso.so.1 /lib64/ld-linux-x86-64.so.2 libc.so.6 libm.so.6 librt.so.1 \
 			 libdl.so.2 libpthread.so.0 libutil.so.1 libresolv.so.2 libnss_dns.so.2
 
-# List all the nodejs dependencies, besides Glibc libraries
+# List all the Node.js dependencies, besides Glibc libraries
 .INTERMEDIATE: nodejs-deps
 nodejs-deps:
 	@ldd $(NODEJS_DIR)nodejs | \
 		awk '{if ($$2 =="=>") {print $$1}}' | \
 		sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
 
-# Generate manifest rules for nodejs dependencies
+# Generate manifest rules for Node.js dependencies
 .INTERMEDIATE: nodejs-trusted-libs
 nodejs-trusted-libs: nodejs-deps
 	@for F in `cat nodejs-deps`; do \
