@@ -1,29 +1,29 @@
-# Nginx manifest example
+# Nodejs manifest file example
 #
 # This manifest was prepared and tested on Ubuntu 18.04.
-#
-# node must be run with the pal_loader:
-#
-# ./pal_loader nodejs.manifest helloworld.js
 
-# The executable to load in Graphene.
-loader.exec = file:/usr/bin/node
-loader.execname = nodejs
+# Executable to load into Graphene and run.
+loader.exec = file:$(NODEJS_DIR)nodejs
+loader.execname = file:nodejs
 
-# Graphene environment, including the path to the library OS and the debug
-# option (inline/none).
-loader.preload = file:../../../../../Runtime/libsysdb.so
-loader.libos = libsysdb
-loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu
-loader.env.PATH = /usr/local/bin:/usr/bin:/bin
+# LibOS layer library of Graphene. There is currently only one implementation,
+# so it is always set to libsysdb.so. 
+loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
+
+# Show/hide debug log of Graphene ('inline' or 'none' respectively).
 loader.debug_type = $(GRAPHENEDEBUG)
 
-# Default glibc files, mounted from the Runtime directory in GRAPHENEDIR.
+# Specify paths to search for libraries. The usual LD_LIBRARY_PATH syntax
+# applies. Paths must be in-Graphene visible paths, not host-OS paths (i.e.,
+# paths must be taken from fs.mount.xxx.path, not fs.mount.xxx.uri).
+loader.env.LD_LIBRARY_PATH = /lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu
+
+# Mount host-OS directory to required libraries (in 'uri') into in-Graphene
+# visible directory /lib (in 'path').
 fs.mount.lib.type = chroot
 fs.mount.lib.path = /lib
 fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime
 
-# Host-level libraries (/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu) required by nodejs.
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
@@ -32,43 +32,25 @@ fs.mount.lib3.type = chroot
 fs.mount.lib3.path = /usr/lib/x86_64-linux-gnu
 fs.mount.lib3.uri = file:/usr/lib/x86_64-linux-gnu
 
-# SGX general options
+# Set enclave size (somewhat arbitrarily) to 1GB. Recall that SGX v1 requires
+# to specify enclave size at enclave creation time.
+sgx.enclave_size = 1G
 
-# Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
-# size must be specified during signing. If Nginx needs more virtual memory
-# than the enclave size, Graphene will not be able to allocate it.
-sgx.enclave_size = 2G
-
-# Set the maximum number of enclave threads. For SGX v1, the number of enclave
-# TCSes must be specified during signing, so the application cannot use more
-# threads than the number of TCSes. Note that Graphene also creates an internal
-# thread for handling inter-process communication (IPC), and potentially another
-# thread for asynchronous events. Therefore, the actual number of threads that
-# the application can create is (sgx.thread_num - 2).
-#
-# We (somewhat arbitrarily) specify 4 threads since Nginx is single-threaded.
+# Set maximum number of in-enclave threads (somewhat arbitrarily) to 8. Recall
+# that SGX v1 requires to specify the maximum number of simultaneous threads at
+# enclave creation time.
 sgx.thread_num = 8
 
-# SGX trusted libraries
+# Specify all libraries used by nodejs and its dependencies (including all libs
+# which can be loaded at runtime via dlopen).
 sgx.trusted_files.ld = file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2
 sgx.trusted_files.libc = file:$(GRAPHENEDIR)/Runtime/libc.so.6
 sgx.trusted_files.libm = file:$(GRAPHENEDIR)/Runtime/libm.so.6
 sgx.trusted_files.libdl = file:$(GRAPHENEDIR)/Runtime/libdl.so.2
 sgx.trusted_files.librt = file:$(GRAPHENEDIR)/Runtime/librt.so.1
+sgx.trusted_files.libutil = file:$(GRAPHENEDIR)/Runtime/libutil.so.1
 sgx.trusted_files.libpthread = file:$(GRAPHENEDIR)/Runtime/libpthread.so.0
-
-sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
-sgx.trusted_files.libuv = file:/usr/lib/x86_64-linux-gnu/libuv.so.1
-sgx.trusted_files.libssl = file:/usr/lib/x86_64-linux-gnu/libssl.so.1.0.0
-sgx.trusted_files.libgcc_s = file:/lib/x86_64-linux-gnu/libgcc_s.so.1
-sgx.trusted_files.libcares = file:/usr/lib/x86_64-linux-gnu/libcares.so.2
-sgx.trusted_files.libicuuc = file:/usr/lib/x86_64-linux-gnu/libicuuc.so.60
-sgx.trusted_files.libcrypto = file:/usr/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-sgx.trusted_files.libstdcpp = file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6
-sgx.trusted_files.libnghttp2 = file:/usr/lib/x86_64-linux-gnu/libnghttp2.so.14
-sgx.trusted_files.libicui18n = file:/usr/lib/x86_64-linux-gnu/libicui18n.so.60
-sgx.trusted_files.libicudata = file:/usr/lib/x86_64-linux-gnu/libicudata.so.60
-sgx.trusted_files.libhttp_parser = file:/usr/lib/x86_64-linux-gnu/libhttp_parser.so.2.7.1
+$(NODEJS_TRUSTED_LIBS)
 
 # jsscript (trusted)
 sgx.trusted_files.jsscript = file:helloworld.js
