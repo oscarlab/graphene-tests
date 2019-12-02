@@ -1,4 +1,4 @@
-This example demonstrates how to run Tensorflow (v1.9) Lite's label_image example on Graphene. Reads an input image `image.bmp` from the current directory and uses Tensorflow lite and the Inception v3 model to label the image.
+This example demonstrates how to run TensorFlow (v1.9) Lite's label_image example on Graphene. Reads an input image `image.bmp` from the current directory and uses TensorFlow lite and the Inception v3 model to label the image.
 
 Known limitations:
 
@@ -7,11 +7,11 @@ Known limitations:
 
 To install build dependencies on Ubuntu 16.04 there is a convenience target invoked with `make install-dependencies-ubuntu`. This also serves as a starting point to figure out which packages to install on newer releases of Ubuntu.
 
-To build Tensorflow and Graphene artifacts:
+To build TensorFlow and Graphene artifacts:
 - without SGX do `make`
 - with SGX do `make SGX=1 `
 
-To run the image labeling example of Tensorflow:
+To run the image labeling example of TensorFlow:
 - without Graphene do `make run-native`
 - with Graphene do `make run-graphene`
 - with Graphene-SGX do `make SGX=1 run-graphene`
