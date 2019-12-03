@@ -120,9 +120,10 @@ test: all $(INSTALLDIR)/lmbench-test-ci.sh
 $(INSTALLDIR)/pal_loader:
 	ln -s $(GRAPHENEDIR_FROM_INSTALLDIR)/Runtime/pal_loader $@
 
-.PHONY: clean distclean
+.PHONY: clean
 clean:
 	[ ! -d $(INSTALLDIR) ] || (cd $(INSTALLDIR) && $(RM) *.manifest *.manifest.sgx *.sig *.token)
 
+.PHONY: distclean
 distclean: clean
 	$(RM) -r $(LMBENCHDIR) $(LMBENCHDIR).tgz
