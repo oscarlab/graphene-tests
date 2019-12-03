@@ -241,14 +241,8 @@ declare -a tests=(
 			"lat_sig prot lat_sig"
 ## DEP  2/4/19: Temporarily remove fork from the unit tests
 #			"lat_proc fork"
-## DEP 6/16/18: Temporarily remove dfork from the unit tests
-#			"lat_proc dfork"
-## DEP 12/9/17: Temporarily remove vfork from the unit tests
-#			"lat_proc vfork"
 ## DEP 11/1/18: Temporarily remove exec from the unit tests
 #			"lat_proc exec"
-## DEP 6/19/18: Temporarily remove dforkexec from the unit tests
-#			"lat_proc dforkexec"
 ## DEP 6/16/18: Temporarily remove shell from the unit tests
 #			"lat_proc shell"
 			"lat_fs $FSDIR"

@@ -4,15 +4,13 @@
 # - make DEBUG=1        Building for Linux (with Graphene debug output)
 # - make SGX=1          Building for SGX
 # - make SGX=1 DEBUG=1  Building for SGX (with Graphene debug output)
-
-# - make
-# - make DEBUG=1
-# - make SGX=1
-# - make SGX=1 DEBUG=1
 #
 # Use `make clean` to remove Graphene-generated files.
 
 # Constants
+
+LMBENCHURL = https://sourceforge.net/projects/lmbench/files/lmbench/2.5/lmbench-2.5.tgz/download
+LMBENCHCHECKSUM = e7431530a4cf4c44b5068e23454f95765dc0b51e7d98bc2bd70451b17d505bd9
 LMBENCHDIR = lmbench-2.5
 INSTALLDIR = $(LMBENCHDIR)/bin/linux
 LMBENCHCONFIG = $(INSTALLDIR)$(shell $(LMBENCHDIR)/scripts/config)
@@ -43,11 +41,21 @@ endif
 
 # Building LMBench binaries
 
-$(INSTALLDIR)/lmbench:
+$(INSTALLDIR)/lmbench: $(LMBENCHDIR)/src/Makefile
 	$(MAKE) -C $(LMBENCHDIR)/src OS=linux
+
+# Automatically downloading and unpacking LMBench source code
+$(LMBENCHDIR)/src/Makefile: $(LMBENCHDIR).tgz
+	[ "`sha256sum $<`" = "$(LMBENCHCHECKSUM)  $<" ] || \
+		(echo "*** $< has a wrong checksum ***"; exit 255)
+	tar -xzf $<
+
+$(LMBENCHDIR).tgz:
+	wget $(LMBENCHURL) -O $@
 
 $(INSTALLDIR)/lmbench-test-ci.sh:
 	cp lmbench-test-ci.sh $@
+
 
 # Generating the manifests
 

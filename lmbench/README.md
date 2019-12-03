@@ -5,7 +5,11 @@ the Makefile and a template for generating the manifest. The configuration
 is only tested with LMBench 2.5 and does not work for LMBench 3.0+. The
 application is tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
 
-# Generating the manifest
+# Building LMBench and generating the manifest
+
+This repository does not contain the source code of LMBench. Using the following
+building commands will automatically download the source code and unpack it into
+the current directory.
 
 ## Building for Linux
 
@@ -35,7 +39,7 @@ Here are a few examples:
 
 ## Running with Graphene
 
-To run the whole test suite under Graphene, use one of the following commands:
+To run the whole test suite under Graphene, use one of the following command:
 ```
 make run-graphene
 ```
@@ -50,7 +54,7 @@ using `pal_loader`. Here are a few examples:
 
 ## Running with Graphene-SGX
 
-To run the whole test suite, use one of the following commands:
+To run the whole test suite, use one of the following command:
 ```
 make run-graphene SGX=1
 ```
