@@ -50,6 +50,7 @@ $(LMBENCHDIR)/src/Makefile: $(LMBENCHDIR).tgz
 	[ "`sha256sum $<`" = "$(LMBENCHCHECKSUM)  $<" ] || \
 		(echo "*** $< has a wrong checksum ***"; exit 255)
 	tar -xzf $<
+	touch $@
 
 $(LMBENCHDIR).tgz:
 	wget $(LMBENCHURL) -O $@
