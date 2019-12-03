@@ -5,7 +5,8 @@
 # - make SGX=1          Building for SGX
 # - make SGX=1 DEBUG=1  Building for SGX (with Graphene debug output)
 #
-# Use `make clean` to remove Graphene-generated files.
+# Use `make clean` to remove Graphene-generated files or `make distclean` to
+# remove all generated or downloaded files from the directory.
 
 # Constants
 
@@ -124,4 +125,4 @@ clean:
 	[ ! -d $(INSTALLDIR) ] || (cd $(INSTALLDIR) && $(RM) *.manifest *.manifest.sgx *.sig *.token)
 
 distclean: clean
-	$(MAKE) -C $(LMBENCHDIR) clean
+	$(RM) -r $(LMBENCHDIR) $(LMBENCHDIR).tgz

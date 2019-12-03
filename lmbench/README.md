@@ -23,7 +23,7 @@ Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
 ## Running natively
 
-To run the whole test suite natively, use one of the following commands:
+To run the whole test suite natively, use one of the following command:
 ```
 make run-native
 
