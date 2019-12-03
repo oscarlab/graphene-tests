@@ -9,7 +9,7 @@ application is tested on Ubuntu 16.04, with both normal Linux and SGX platforms.
 
 This repository does not contain the source code of LMBench. Using the following
 building commands will automatically download the source code and unpack it into
-the current directory.
+a subdirectory of the current directory.
 
 ## Building for Linux
 
@@ -23,7 +23,7 @@ Run `make SGX=1` (non-debug) or `make SGX=1 DEBUG=1` (debug) in the directory.
 
 ## Running natively
 
-To run the whole test suite natively, use one of the following command:
+To run the whole test suite natively, use the following command:
 ```
 make run-native
 
@@ -39,7 +39,7 @@ Here are a few examples:
 
 ## Running with Graphene
 
-To run the whole test suite under Graphene, use one of the following command:
+To run the whole test suite under Graphene, use the following command:
 ```
 make run-graphene
 ```
@@ -54,7 +54,7 @@ using `pal_loader`. Here are a few examples:
 
 ## Running with Graphene-SGX
 
-To run the whole test suite, use one of the following command:
+To run the whole test suite, use the following command:
 ```
 make run-graphene SGX=1
 ```

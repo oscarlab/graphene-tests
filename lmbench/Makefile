@@ -11,7 +11,7 @@
 # Constants
 
 LMBENCHURL = https://sourceforge.net/projects/lmbench/files/lmbench/2.5/lmbench-2.5.tgz/download
-LMBENCHCHECKSUM = e7431530a4cf4c44b5068e23454f95765dc0b51e7d98bc2bd70451b17d505bd9
+LMBENCHHASH = e7431530a4cf4c44b5068e23454f95765dc0b51e7d98bc2bd70451b17d505bd9
 LMBENCHDIR = lmbench-2.5
 INSTALLDIR = $(LMBENCHDIR)/bin/linux
 LMBENCHCONFIG = $(INSTALLDIR)$(shell $(LMBENCHDIR)/scripts/config)
@@ -47,8 +47,8 @@ $(INSTALLDIR)/lmbench: $(LMBENCHDIR)/src/Makefile
 
 # Automatically downloading and unpacking LMBench source code
 $(LMBENCHDIR)/src/Makefile: $(LMBENCHDIR).tgz
-	[ "`sha256sum $<`" = "$(LMBENCHCHECKSUM)  $<" ] || \
-		(echo "*** $< has a wrong checksum ***"; exit 255)
+	[ "`sha256sum $<`" = "$(LMBENCHHASH)  $<" ] || \
+		(echo "*** $< has a wrong hash ***"; exit 255)
 	tar -xzf $<
 	touch $@
 
