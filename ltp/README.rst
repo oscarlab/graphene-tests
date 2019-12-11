@@ -96,13 +96,3 @@ Flaky tests
    Intermittent failure on Linux debug host
    recvmsg01,1
    recvmsg01,2
-
-   # glibc issue:
-   # Once glibc version is upgraded, this can be moved to PASSED
-   #
-   # old(2.19) glibc includes a work around for sleep(3)
-   # which make kill12 unstable due to race condition.
-   # The following glibc changeset removed such work around.
-   #   commit 8c873bf0190740ac1102e13ff7aeb6c08048abfd
-   #   Remove signal handling for nanosleep (bug 16364)
-   kill12,1
