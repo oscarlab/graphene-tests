@@ -42,3 +42,8 @@ Notice that we run Redis with two parameters: `save ''` and `protected-mode no`:
   interface. Even though we use the loopback interface (which is always allowed
   in Redis), Graphene hides this information. Therefore, we ask Redis to allow
   clients on all interfaces.
+
+# Redis with Select
+
+By default, Redis uses the epoll mechanism of Linux to monitor client connections.
+To test Redis with select, add `USE_SELECT=1`, e.g., `make SGX=1 USE_SELECT=1`.

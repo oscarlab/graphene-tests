@@ -7,6 +7,10 @@
 # Any of these invocations clones Redis' git repository and builds Redis in
 # default configuration and in the latest-to-date (5.0.5) version.
 #
+# By default, Redis uses poll/epoll mechanism of Linux. To build Redis with
+# select, use `make USE_SELECT=1`. For correct re-builds, always clean up
+# Redis source code beforehand via `make distclean`.
+#
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
 # additionally remove the cloned Redis git repository.
 
@@ -32,14 +36,23 @@ endif
 
 ############################## REDIS EXECUTABLE ###############################
 
-# Redis is built as usual, without any changes to the build process. The source
-# is cloned from a public GitHub repo (5.0.5 tag) and built via `make`. The
-# result of this build process is the final executable "src/redis-server".
+# Redis is built as usual, without any changes to the build process (except to
+# test select syscall instead of poll/epoll). The source is cloned from a public
+# GitHub repo (5.0.5 tag) and built via `make`. The result of this build process
+# is the final executable "src/redis-server".
 
-$(SRCDIR)/src/redis-server:
+$(SRCDIR)/Makefile:
 	git clone --recursive https://github.com/antirez/redis $(SRCDIR)
 	cd $(SRCDIR) && git checkout $(COMMIT)
+
+ifeq ($(USE_SELECT),1)
+$(SRCDIR)/src/redis-server: $(SRCDIR)/Makefile
+	sed -i 's|#define HAVE_EPOLL 1|/* no HAVE_EPOLL */|g' src/src/config.h
 	$(MAKE) -C $(SRCDIR)
+else
+$(SRCDIR)/src/redis-server: $(SRCDIR)/Makefile
+	$(MAKE) -C $(SRCDIR)
+endif
 
 ################################ REDIS MANIFEST ###############################
 
@@ -83,6 +96,15 @@ redis-server: $(SRCDIR)/src/redis-server
 
 pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
+############################## RUNNING TESTS ##################################
+.PHONY: start-native-server
+start-native-server: all
+	./redis-server --save '' --protected-mode no
+
+.PHONY: start-graphene-server
+start-graphene-server: all
+	./pal_loader redis-server --save '' --protected-mode no
 
 ################################## CLEANUP ####################################
 
