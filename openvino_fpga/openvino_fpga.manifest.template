@@ -1,0 +1,173 @@
+#!$(PAL)
+
+loader.preload = file:$(SHIMPATH)
+loader.exec = file:./benchmark_app
+loader.execname = benchmark_app 
+loader.env.LD_LIBRARY_PATH = /graphene:/host:/usr/local/lib:/usr/lib:/usr/lib/x86_64-linux-gnu:./lib
+loader.env.PATH = /usr/bin:/bin
+# Debug type inline can be used for verbose debug prints
+#loader.debug_type = inline
+loader.debug_type = none
+
+fs.mount.lib1.type = chroot
+fs.mount.lib1.path = /graphene
+fs.mount.lib1.uri = file:$(LIBCDIR)
+
+fs.mount.lib2.type = chroot
+fs.mount.lib2.path = /host
+fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
+
+fs.mount.bin.type = chroot
+fs.mount.bin.path = /bin
+fs.mount.bin.uri = file:/bin
+
+fs.mount.usr.type = chroot
+fs.mount.usr.path = /usr
+fs.mount.usr.uri = file:/usr
+
+fs.mount.home.type = chroot
+fs.mount.home.path = /home
+fs.mount.home.uri = file:/home
+
+fs.mount.opt.type = chroot
+fs.mount.opt.path = /opt
+fs.mount.opt.uri = file:/opt
+
+## Mounts of fpga device files ##
+fs.mount.dev.type = chroot
+fs.mount.dev.path = /dev/intel-fpga-fme.0
+fs.mount.dev.uri = file:/dev/intel-fpga-fme.0
+
+fs.mount.dev2.type = chroot
+fs.mount.dev2.path = /dev/intel-fpga-port.0
+fs.mount.dev2.uri = file:/dev/intel-fpga-port.0
+
+fs.mount.sys.type = chroot
+fs.mount.sys.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga
+fs.mount.sys.uri = file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga
+
+fs.mount.fpga1.type = chroot
+fs.mount.fpga1.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/device
+fs.mount.fpga1.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/device
+
+fs.mount.fpga2.type = chroot
+fs.mount.fpga2.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/afu_id
+fs.mount.fpga2.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/afu_id
+
+fs.mount.fpga3.type = chroot
+fs.mount.fpga3.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
+fs.mount.fpga3.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
+
+fs.mount.fpga4.type = chroot
+fs.mount.fpga4.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
+fs.mount.fpga4.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
+
+fs.mount.fpga5.type = chroot
+fs.mount.fpga5.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
+fs.mount.fpga5.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
+
+fs.mount.fpga6.type = chroot
+fs.mount.fpga6.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
+fs.mount.fpga6.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
+
+fs.mount.fpga7.type = chroot
+fs.mount.fpga7.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/vendor
+fs.mount.fpga7.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/vendor
+
+fs.mount.fpga8.type = chroot
+fs.mount.fpga8.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/dev
+fs.mount.fpga8.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/dev
+
+fs.mount.fpga9.type = chroot
+fs.mount.fpga9.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
+fs.mount.fpga9.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
+
+fs.mount.fpga10.type = chroot
+fs.mount.fpga10.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/numa_node
+fs.mount.fpga10.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/numa_node
+
+fs.mount.fpga11.type = chroot
+fs.mount.fpga11.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/local_cpus
+fs.mount.fpga11.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/local_cpus
+
+## Enclave configuration ##
+# This should be altered based on the application requirement
+sgx.require_avx = 1
+sgx.require_avx512 = 1
+sgx.enclave_size = 4G
+sgx.thread_num = 20
+
+## Graphene Runtime Libraries ##
+sgx.trusted_files.ld = file:$(LIBCDIR)/ld-linux-x86-64.so.2
+sgx.trusted_files.libc = file:$(LIBCDIR)/libc.so.6
+sgx.trusted_files.libdl = file:$(LIBCDIR)/libdl.so.2
+sgx.trusted_files.libm = file:$(LIBCDIR)/libm.so.6
+sgx.trusted_files.libpthread = file:$(LIBCDIR)/libpthread.so.0
+sgx.trusted_files.liburil = file:$(LIBCDIR)/libutil.so.1
+sgx.trusted_files.librt = file:$(LIBCDIR)/librt.so.1
+sgx.trusted_files.libresolv = file:$(LIBCDIR)/libresolv.so.2
+
+sgx.trusted_files.libz = file:/lib/x86_64-linux-gnu/libz.so.1
+sgx.trusted_files.libnss1 = file:/lib/x86_64-linux-gnu/libnss_compat.so.2
+sgx.trusted_files.libnss2 = file:/lib/x86_64-linux-gnu/libnss_files.so.2
+sgx.trusted_files.libnss3 = file:/lib/x86_64-linux-gnu/libnss_dns.so.2
+sgx.trusted_files.libssl = file:/lib/x86_64-linux-gnu/libssl.so.1.0.0
+sgx.trusted_files.libcrypto = file:/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+sgx.trusted_files.libcpp = file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+
+# Copied from Sample build
+sgx.trusted_files.libfmtreader = file:./lib/libformat_reader.so
+
+## OpenCL ##
+sgx.trusted_files.libaltera = file:./lib/libalteracl.so
+sgx.trusted_files.libaclemulator = file:./lib/libacl_emulator_kernel_rt.so
+sgx.trusted_files.libelf0 = file:./lib/libelf.so.0
+
+## OPAE ##
+sgx.trusted_files.libopae = file:/usr/lib/libopae-c.so.1
+# libintelopae should contain the absolute path to libintel_opae_mmd.so. The line below is as per the default installation directory. Modify this if installed at an alternate location
+sgx.trusted_files.libintelopae = file:$(HOME)/tools/intelrtestack/a10_gx_pac_ias_1_2_pv/opencl/opencl_bsp/linux64/lib/libintel_opae_mmd.so
+sgx.trusted_files.fcd = file:/opt/Intel/OpenCL/Boards/dcp_bsp.fcd
+
+
+## OpenVINO Libraries ##
+sgx.trusted_files.libinferengine = file:./lib/libinference_engine.so
+sgx.trusted_files.liblpsolve5525 = file:./lib/liblpsolve5525.so
+sgx.trusted_files.libprotobuf = file:./lib/libprotobuf.so.3.6.1
+sgx.trusted_files.libmkldnnplugin = file:./lib/libMKLDNNPlugin.so
+sgx.trusted_files.libmyriadplugin = file:./lib/libmyriadPlugin.so
+sgx.trusted_files.libcldnnplugin = file:./lib/libclDNNPlugin.so
+sgx.trusted_files.libmultideviceplugin = file:./lib/libMultiDevicePlugin.so
+sgx.trusted_files.libgnaplugin = file:./lib/libGNAPlugin.so
+sgx.trusted_files.libmkltiny = file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/external/mkltiny_lnx/lib/libmkl_tiny_tbb.so
+sgx.trusted_files.libhetero = file:./lib/libHeteroPlugin.so
+sgx.trusted_files.libdlaruntimecore = file:./lib/libdla_runtime_core.so
+sgx.trusted_files.libdlia = file:./lib/libdliaPlugin.so
+sgx.trusted_files.libdlacompilercore = file:./lib/libdla_compiler_core.so
+sgx.trusted_files.libiomp5 = file:/opt/intel/openvino_2019.3.376/openvx/lib/libiomp5.so
+sgx.trusted_files.libocvimgcodecs = file:/opt/intel/openvino_2019.3.376/opencv/lib/libopencv_imgcodecs.so.4.1
+sgx.trusted_files.libocvimgproc = file:/opt/intel/openvino_2019.3.376/opencv/lib/libopencv_imgproc.so.4.1
+sgx.trusted_files.libocvcore = file:/opt/intel/openvino_2019.3.376/opencv/lib/libopencv_core.so.4.1
+sgx.trusted_files.libtbbd = file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/external/tbb/lib/libtbb_debug.so.2
+sgx.trusted_files.libtbb = file:/usr/lib/x86_64-linux-gnu/libtbb.so.2
+sgx.trusted_files.libngraph = file:./lib/libngraph.so
+sgx.trusted_files.libmkltinyseq = file:./lib/libmkl_tiny_seq.so
+sgx.trusted_files.pluginxml= file:./lib/plugins.xml
+
+# Based on the bitstream/ neural network arch select the right prototxt file here. This line will have to be modified for a different architecture
+sgx.trusted_files.proto= file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/arch_descriptions/52fps_Resnet50_pac_a10_arch.prototxt
+
+sgx.allowed_files.models = file:models
+sgx.allowed_files.pics = file:pics
+sgx.allowed_files.lib = file:/lib
+sgx.allowed_files.libos = files:$(LIBCDIR)
+sgx.allowed_files.optfcd = files:/opt
+
+sgx.allowed_files.intelfpgafme = file:/dev/intel-fpga-fme.0
+sgx.allowed_files.intelfpgaport= file:/dev/intel-fpga-port.0
+
+## Performance reports ##
+# Allowed files for performance reports output.  Any additional files being read/ written need to be similarly listed out here
+sgx.allowed_files.report= file:benchmark_report.csv 
+sgx.allowed_files.detailed_report= file:benchmark_detailed_counters_report.csv 
+sgx.allowed_files.detailed_report= file:benchmark_average_counters_report.csv
