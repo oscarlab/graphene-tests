@@ -41,16 +41,16 @@ endif
 # GitHub repo (5.0.5 tag) and built via `make`. The result of this build process
 # is the final executable "src/redis-server".
 
-$(SRCDIR):
+$(SRCDIR)/Makefile:
 	git clone --recursive https://github.com/antirez/redis $(SRCDIR)
 	cd $(SRCDIR) && git checkout $(COMMIT)
 
 ifeq ($(USE_SELECT),1)
-$(SRCDIR)/src/redis-server: $(SRCDIR)
+$(SRCDIR)/src/redis-server: $(SRCDIR)/Makefile
 	sed -i 's|#define HAVE_EPOLL 1|/* no HAVE_EPOLL */|g' src/src/config.h
 	$(MAKE) -C $(SRCDIR)
 else
-$(SRCDIR)/src/redis-server: $(SRCDIR)
+$(SRCDIR)/src/redis-server: $(SRCDIR)/Makefile
 	$(MAKE) -C $(SRCDIR)
 endif
 
