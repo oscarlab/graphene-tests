@@ -534,7 +534,7 @@ class TestSuite:
 
     def log_summary(self):
         _log.warning('LTP finished'
-            ' tests=%d failures=%d errors=%d skipped=%d returncode=%d'
+            ' tests=%d failures=%d errors=%d skipped=%d returncode=%d',
             self._get('tests'), self._get('failures'), self._get('errors'),
             self._get('skipped'), self.returncode)
 
