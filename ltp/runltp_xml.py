@@ -80,9 +80,14 @@ class AbnormalTestResult(Exception):
     Args:
         message (str): a message to be logged
     '''
-    def __init__(self, message):
+
+    loglevel = logging.WARNING
+
+    def __init__(self, message, *, loglevel=None):
         super().__init__()
         self.message = message
+        if loglevel is not None:
+            self.loglevel = loglevel
 
     @abc.abstractmethod
     def apply_to(self, runner):
@@ -96,17 +101,18 @@ class AbnormalTestResult(Exception):
 class Fail(AbnormalTestResult):
     '''Raised when test fails nominally.'''
     def apply_to(self, runner):
-        runner.failure(self.message)
+        runner.failure(self.message, loglevel=self.loglevel)
 
 class Skip(AbnormalTestResult):
     '''Raised when test is skipped.'''
     def apply_to(self, runner):
-        runner.skipped(self.message)
+        runner.skipped(self.message, loglevel=self.loglevel)
 
 class Error(AbnormalTestResult):
     '''Raised when test fails for external or grave reason.'''
+    loglevel = logging.ERROR
     def apply_to(self, runner):
-        runner.error(self.message)
+        runner.error(self.message, loglevel=self.loglevel)
 
 
 class TestRunner:
@@ -172,42 +178,42 @@ class TestRunner:
 
         return element
 
-    def success(self):
+    def success(self, *, loglevel=logging.INFO):
         '''Add a success to the report'''
         # pylint: disable=redefined-outer-name
-        self.log.info('-> PASS')
+        self.log.log(loglevel, '-> PASS')
         self._add_result()
 
-    def failure(self, message):
+    def failure(self, message, *, loglevel=logging.WARNING):
         '''Add a nominal failure to the report
 
         Args:
             message (str): a message to display (“Stack Trace” in Jenkins)
         '''
         # pylint: disable=redefined-outer-name
-        self.log.warning('-> FAIL (%s)', message)
+        self.log.log(loglevel, '-> FAIL (%s)', message)
         etree.SubElement(self._add_result(), 'failure', message=message)
         self.suite.inc('failures')
 
-    def error(self, message):
+    def error(self, message, *, loglevel=logging.ERROR):
         '''Add an error to the report
 
         Args:
             message (str): a message to display
         '''
         # pylint: disable=redefined-outer-name
-        self.log.error('-> ERROR (%s)', message)
+        self.log.log(loglevel, '-> ERROR (%s)', message)
         etree.SubElement(self._add_result(), 'error').text = message
         self.suite.inc('errors')
 
-    def skipped(self, message):
+    def skipped(self, message, *, loglevel=logging.WARNING):
         '''Add a skipped test to the report
 
         Args:
             message (str): a message to display (“Skip Message” in Jenkins)
         '''
         # pylint: disable=redefined-outer-name
-        self.log.warning('-> SKIP (%s)', message)
+        self.log.log(loglevel, '-> SKIP (%s)', message)
         etree.SubElement(self._add_result(), 'skipped').text = message
         self.suite.inc('skipped')
 
@@ -219,7 +225,7 @@ class TestRunner:
         '''
 
         if self.cfgsection.getboolean('skip', fallback=False):
-            raise Skip('skipped via config')
+            raise Skip('skipped via config', loglevel=logging.INFO)
 
         if any(c in self.cmd for c in ';|&'):
             # This is a shell command which would spawn multiple processes.
@@ -526,6 +532,12 @@ class TestSuite:
         '''
         stream.write(etree.tostring(self.xml, pretty_print=True))
 
+    def log_summary(self):
+        _log.warning('LTP finished'
+            ' tests=%d failures=%d errors=%d skipped=%d returncode=%d',
+            self._get('tests'), self._get('failures'), self._get('errors'),
+            self._get('skipped'), self.returncode)
+
     async def execute(self):
         '''Execute the suite'''
         await asyncio.gather(*(runner.execute() for runner in self.queue))
@@ -592,6 +604,7 @@ def main(args=None):
     finally:
         loop.close()
     suite.write_report(sys.stdout.buffer)
+    suite.log_summary()
     return suite.returncode
 
 if __name__ == '__main__':
