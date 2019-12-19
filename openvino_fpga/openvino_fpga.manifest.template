@@ -9,6 +9,9 @@ loader.env.PATH = /usr/bin:/bin
 #loader.debug_type = inline
 loader.debug_type = none
 
+# TODO: DEVICEPATH- Path to fpga device file. This should be updated by the developer in the Makefile. Refer Makefile
+fpga.devicepath = $(DEVICEPATH)/
+
 fs.mount.lib1.type = chroot
 fs.mount.lib1.path = /graphene
 fs.mount.lib1.uri = file:$(LIBCDIR)
@@ -43,59 +46,59 @@ fs.mount.dev2.path = /dev/intel-fpga-port.0
 fs.mount.dev2.uri = file:/dev/intel-fpga-port.0
 
 fs.mount.sys.type = chroot
-fs.mount.sys.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga
-fs.mount.sys.uri = file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga
+fs.mount.sys.path = $(DEVICEPATH)
+fs.mount.sys.uri = file:$(DEVICEPATH)
 
 fs.mount.fpga1.type = chroot
-fs.mount.fpga1.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/device
-fs.mount.fpga1.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/device
+fs.mount.fpga1.path = $(DEVICEPATH)/intel-fpga-dev.0/device/device
+fs.mount.fpga1.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/device/device
 
 fs.mount.fpga2.type = chroot
-fs.mount.fpga2.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/afu_id
-fs.mount.fpga2.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/afu_id
+fs.mount.fpga2.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-port.0/afu_id
+fs.mount.fpga2.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-port.0/afu_id
 
 fs.mount.fpga3.type = chroot
-fs.mount.fpga3.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
-fs.mount.fpga3.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
+fs.mount.fpga3.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
+fs.mount.fpga3.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/pr/interface_id
 
 fs.mount.fpga4.type = chroot
-fs.mount.fpga4.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
-fs.mount.fpga4.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
+fs.mount.fpga4.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
+fs.mount.fpga4.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/socket_id
 
 fs.mount.fpga5.type = chroot
-fs.mount.fpga5.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
-fs.mount.fpga5.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
+fs.mount.fpga5.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
+fs.mount.fpga5.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/ports_num
 
 fs.mount.fpga6.type = chroot
-fs.mount.fpga6.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
-fs.mount.fpga6.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
+fs.mount.fpga6.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
+fs.mount.fpga6.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/bitstream_id
 
 fs.mount.fpga7.type = chroot
-fs.mount.fpga7.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/vendor
-fs.mount.fpga7.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/vendor
+fs.mount.fpga7.path = $(DEVICEPATH)/intel-fpga-dev.0/device/vendor
+fs.mount.fpga7.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/device/vendor
 
 fs.mount.fpga8.type = chroot
-fs.mount.fpga8.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/dev
-fs.mount.fpga8.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-port.0/dev
+fs.mount.fpga8.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-port.0/dev
+fs.mount.fpga8.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-port.0/dev
 
 fs.mount.fpga9.type = chroot
-fs.mount.fpga9.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
-fs.mount.fpga9.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
+fs.mount.fpga9.path = $(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
+fs.mount.fpga9.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/intel-fpga-fme.0/thermal_mgmt/temperature
 
 fs.mount.fpga10.type = chroot
-fs.mount.fpga10.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/numa_node
-fs.mount.fpga10.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/numa_node
+fs.mount.fpga10.path = $(DEVICEPATH)/intel-fpga-dev.0/device/numa_node
+fs.mount.fpga10.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/device/numa_node
 
 fs.mount.fpga11.type = chroot
-fs.mount.fpga11.path = /sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/local_cpus
-fs.mount.fpga11.uri = dev:tty,file:/sys/devices/pci0000:00/0000:00:01.1/0000:02:00.0/fpga/intel-fpga-dev.0/device/local_cpus
+fs.mount.fpga11.path = $(DEVICEPATH)/intel-fpga-dev.0/device/local_cpus
+fs.mount.fpga11.uri = dev:tty,file:$(DEVICEPATH)/intel-fpga-dev.0/device/local_cpus
 
 ## Enclave configuration ##
 # This should be altered based on the application requirement
 sgx.require_avx = 1
 sgx.require_avx512 = 1
 sgx.enclave_size = 4G
-sgx.thread_num = 20
+sgx.thread_num = 10
 
 ## Graphene Runtime Libraries ##
 sgx.trusted_files.ld = file:$(LIBCDIR)/ld-linux-x86-64.so.2
@@ -125,7 +128,8 @@ sgx.trusted_files.libelf0 = file:./lib/libelf.so.0
 
 ## OPAE ##
 sgx.trusted_files.libopae = file:/usr/lib/libopae-c.so.1
-# libintelopae should contain the absolute path to libintel_opae_mmd.so. The line below is as per the default installation directory. Modify this if installed at an alternate location
+# TODO: libintelopae should contain the absolute path to libintel_opae_mmd.so. The line below is as per the default installation directory. Modify this if installed at an alternate location
+# Note that if the directory isnt mount, it should be mounted first. Refer to the initial section of manifest
 sgx.trusted_files.libintelopae = file:$(HOME)/tools/intelrtestack/a10_gx_pac_ias_1_2_pv/opencl/opencl_bsp/linux64/lib/libintel_opae_mmd.so
 sgx.trusted_files.fcd = file:/opt/Intel/OpenCL/Boards/dcp_bsp.fcd
 
@@ -154,7 +158,7 @@ sgx.trusted_files.libngraph = file:./lib/libngraph.so
 sgx.trusted_files.libmkltinyseq = file:./lib/libmkl_tiny_seq.so
 sgx.trusted_files.pluginxml= file:./lib/plugins.xml
 
-# Based on the bitstream/ neural network arch select the right prototxt file here. This line will have to be modified for a different architecture
+# TODO: Based on the bitstream/ neural network arch select the right prototxt file here. This line will have to be modified for a different architecture
 sgx.trusted_files.proto= file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/arch_descriptions/52fps_Resnet50_pac_a10_arch.prototxt
 
 sgx.allowed_files.models = file:models
@@ -167,7 +171,7 @@ sgx.allowed_files.intelfpgafme = file:/dev/intel-fpga-fme.0
 sgx.allowed_files.intelfpgaport= file:/dev/intel-fpga-port.0
 
 ## Performance reports ##
-# Allowed files for performance reports output.  Any additional files being read/ written need to be similarly listed out here
+# TODO: Allowed files for performance reports output.  Any additional files being read/ written need to be similarly listed out here
 sgx.allowed_files.report= file:benchmark_report.csv 
 sgx.allowed_files.detailed_report= file:benchmark_detailed_counters_report.csv 
-sgx.allowed_files.detailed_report= file:benchmark_average_counters_report.csv
+sgx.allowed_files.detailed_report2= file:benchmark_average_counters_report.csv

@@ -21,14 +21,13 @@ This was tested on a machine with SGX and Ubuntu 16.04.
     Copy Shared library dependencies to `./lib`
         Refer to the manifest section: `sgx.trusted_files.*` for information on what all shared libraries need to be copied.
 
+4. Configuration changes needed to Manifest or Makefile are marked with TODO.
+
 # Quick Start
 
 ```sh
 # Build OpenVINO-FPGA with graphene-SGX;
 make SGX=1
-
-# run original OpenVINO/object_detection_sample_ssd
-# note that this assumes the Release build of OpenVINO (no DEBUG=1)
 
 # run OpenVINO/benchmark_app in non-SGX Graphene
 
