@@ -90,9 +90,6 @@ Flaky tests
    recv01,1
    recv01,2
 
-   Intermittent failure on Linux host
-   poll02,1
-
    Intermittent failure on Linux debug host
    recvmsg01,1
    recvmsg01,2
