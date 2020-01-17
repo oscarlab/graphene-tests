@@ -159,7 +159,8 @@ sgx.trusted_files.libmkltinyseq = file:./lib/libmkl_tiny_seq.so
 sgx.trusted_files.pluginxml= file:./lib/plugins.xml
 
 # TODO: Based on the bitstream/ neural network arch select the right prototxt file here. This line will have to be modified for a different architecture
-sgx.trusted_files.proto= file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/arch_descriptions/52fps_Resnet50_pac_a10_arch.prototxt
+sgx.trusted_files.protosmall = file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/arch_descriptions/52fps_Resnet50_pac_a10_arch.prototxt
+sgx.trusted_files.protorelease = file:/opt/intel/openvino_2019.3.376/deployment_tools/inference_engine/lib/intel64/arch_descriptions/4x2x16x64_fp11_sb18823_i1_actk8_poolk8_owk8_image224x224_mbfr.prototxt
 
 sgx.allowed_files.models = file:models
 sgx.allowed_files.pics = file:pics
