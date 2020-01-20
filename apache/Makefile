@@ -11,9 +11,6 @@
 # and installation.
 
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ifeq ($(THIS_DIR), ./)   # to workaround the Graphene bug with allowed_files' paths
-THIS_DIR :=
-endif
 
 INSTALL_DIR ?= $(THIS_DIR)install
 HTTPD_SRC ?= $(THIS_DIR)httpd-2.4.41

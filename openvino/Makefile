@@ -10,9 +10,6 @@
 # Use `make distclean` to further remove the OpenVINO source and installation.
 
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ifeq ($(THIS_DIR), ./)  # workaround Graphene issue #1044 with allowed_files
-THIS_DIR :=
-endif
 
 MODEL_DIR ?= $(THIS_DIR)model
 MODEL_COMMIT ?= acf297c73db8cb3f68791ae1fad4a7cc4a6039e5     # corresponds to tag "2019_R3"

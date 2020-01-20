@@ -11,9 +11,6 @@
 # and installation.
 
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ifeq ($(THIS_DIR), ./)  # workaround Graphene issue #1044 with allowed_files
-THIS_DIR :=
-endif
 
 INSTALL_DIR ?= $(THIS_DIR)install
 NGINX_SRC ?= $(THIS_DIR)nginx-1.16.1
