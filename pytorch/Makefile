@@ -26,7 +26,7 @@ pytorch.sig: python3.sig
 	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
 		-e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
 		-e 's|$$(HOME)|'"$(HOME)"'|g' \
-	    -e 's|# '"$(UBUNTU_VERSION)"' ||g' \
+		-e 's|# '"$(UBUNTU_VERSION)"' ||g' \
 		$< > $@
 
 pytorch.sig: pytorch.manifest
