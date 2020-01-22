@@ -39,6 +39,12 @@ pytorch.sig: pytorch.manifest
 # manifest for the child process.
 python3.manifest: pytorch.manifest
 	cp $< $@
+	sed -i '/trusted_children/d' $@
 
 python3.sig: python3.manifest
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign -libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so -key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem -output python3.manifest.sgx -exec /usr/bin/python3 -manifest $<
+
+.PHONY: clean
+clean:
+	$(RM) $(addprefix pytorch., token sig manifest manifest.sgx)
+	$(RM) $(addprefix python3., token sig manifest manifest.sgx)
