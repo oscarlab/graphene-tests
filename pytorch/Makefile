@@ -6,17 +6,21 @@ else
 GRAPHENEDEBUG = none
 endif
 
-DISTRIB_ID ?= $(shell grep _ID /etc/lsb-release | cut -d= -f2)
-DISTRIB_RLEASE_MAJOR ?= $(shell grep _RELEASE /etc/lsb-release | cut -d= -f 2 | cut -d. -f 1)
+DISTRIB_ID ?= $(shell lsb_release --short --id)
+DISTRIB_RELEASE ?= $(shell lsb_release --short --release)
 
 ifneq ($(DISTRIB_ID),Ubuntu)
 $(error This example requires Ubuntu.)
 endif
 
-UBUNTU_VERSION = $(DISTRIB_ID)$(DISTRIB_RLEASE_MAJOR)
+UBUNTU_VERSION = $(DISTRIB_ID)$(DISTRIB_RELEASE)
 
 .PHONY: default
+ifeq ($(SGX),1)
 default: pytorch.token python3.token
+else
+default: pytorch.manifest python3.manifest
+endif
 
 pytorch.sig: python3.sig
 
@@ -30,7 +34,10 @@ pytorch.sig: python3.sig
 		$< > $@
 
 pytorch.sig: pytorch.manifest
-	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign -libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so -key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem -output pytorch.manifest.sgx -exec /usr/bin/python3 -manifest $<
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-output pytorch.manifest.sgx -exec /usr/bin/python3 -manifest $<
 
 %.token: %.sig
 	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token -output $@ -sig $<
@@ -42,7 +49,10 @@ python3.manifest: pytorch.manifest
 	sed -i '/trusted_children/d' $@
 
 python3.sig: python3.manifest
-	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign -libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so -key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem -output python3.manifest.sgx -exec /usr/bin/python3 -manifest $<
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+		-libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+		-output python3.manifest.sgx -exec /usr/bin/python3 -manifest $<
 
 .PHONY: clean
 clean:

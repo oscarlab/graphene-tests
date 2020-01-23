@@ -97,10 +97,10 @@ sgx.trusted_files.libz2       = file:/lib/x86_64-linux-gnu/libbz2.so.1.0
 sgx.trusted_files.liblzma     = file:/lib/x86_64-linux-gnu/liblzma.so.5
 sgx.trusted_files.libmpdec    = file:/usr/lib/x86_64-linux-gnu/libmpdec.so.2
 
-# Ubuntu16 sgx.trusted_files.libcrypto = file:/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-# Ubuntu16 sgx.trusted_files.libssl    = file:/lib/x86_64-linux-gnu/libssl.so.1.0.0
-# Ubuntu18 sgx.trusted_files.libcrypto = file:/usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
-# Ubuntu18 sgx.trusted_files.libssl    = file:/usr/lib/x86_64-linux-gnu/libssl.so.1.1
+# Ubuntu16.04 sgx.trusted_files.libcrypto = file:/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+# Ubuntu16.04 sgx.trusted_files.libssl    = file:/lib/x86_64-linux-gnu/libssl.so.1.0.0
+# Ubuntu18.04 sgx.trusted_files.libcrypto = file:/usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
+# Ubuntu18.04 sgx.trusted_files.libssl    = file:/usr/lib/x86_64-linux-gnu/libssl.so.1.1
 
 # Name Service Switch (NSS) libraries (Glibc dependencies)
 sgx.trusted_files.libnssfiles  = file:/lib/x86_64-linux-gnu/libnss_files.so.2
@@ -112,7 +112,7 @@ sgx.trusted_files.libnsl       = file:/lib/x86_64-linux-gnu/libnsl.so.1
 sgx.trusted_files.script  = file:pytorchexample.py
 
 # required by Python package ctypes (lib/python3.6/lib-dynload/ctypes.cpython-36m-x86_64-linux-gnu.so)
-# Ubuntu18 sgx.trusted_files.libffi = file:/usr/lib/x86_64-linux-gnu/libffi.so.6
+# Ubuntu18.04 sgx.trusted_files.libffi = file:/usr/lib/x86_64-linux-gnu/libffi.so.6
 
 # File containing the classes, i.e., the things the classifier has been trained to distinguish
 # between.
@@ -133,13 +133,13 @@ sgx.trusted_children.fork = file:python3.sig
 # Various locations where Python dependencies are found.
 sgx.allowed_files.python3    = file:/usr/lib/python3
 sgx.allowed_files.pythonhome = file:$(HOME)/.local/lib
-# Ubuntu16 sgx.allowed_files.python35 = file:/usr/lib/python3.5
-# Ubuntu18 sgx.allowed_files.python36 = file:/usr/lib/python3.6
+# Ubuntu16.04 sgx.allowed_files.python35 = file:/usr/lib/python3.5
+# Ubuntu18.04 sgx.allowed_files.python36 = file:/usr/lib/python3.6
 
 # Some Python package wants to access these files on Ubuntu 16.04.
-# Ubuntu16 sgx.allowed_files.aptconfd = file:/etc/apt/apt.conf.d
-# Ubuntu16 sgx.allowed_files.aptconf  = file:/etc/apt/apt.conf
-# Ubuntu16 sgx.allowed_files.apport   = file:/etc/default/apport
+# Ubuntu16.04 sgx.allowed_files.aptconfd = file:/etc/apt/apt.conf.d
+# Ubuntu16.04 sgx.allowed_files.aptconf  = file:/etc/apt/apt.conf
+# Ubuntu16.04 sgx.allowed_files.apport   = file:/etc/default/apport
 
 # Name Service Switch (NSS) files (Glibc reads these files)
 sgx.trusted_files.nsswitch     = file:/etc/nsswitch.conf
