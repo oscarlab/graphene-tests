@@ -22,9 +22,6 @@ LDFLAGS =
 .PHONY: default
 default: all
 
-include $(LTP_DIR)/../../../../../Scripts/Makefile.configs
-include $(LTP_DIR)/../../../../../Scripts/Makefile.rules
-
 expand_target_to_token = $(foreach t,$(filter-out manifest,$(1)),$(patsubst %.manifest,%,$(t)).token)
 ifeq ($(SGX),1)
 expand_target = $(1) $(foreach t,$(filter-out manifest,$(1)), \
