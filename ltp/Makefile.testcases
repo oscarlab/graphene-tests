@@ -7,7 +7,7 @@ testcases = $(shell cd $(ROOTDIR); \
 exec_target = $(testcases)
 target = $(manifests) $(testcases) etc/nsswitch.conf etc/passwd
 
-include $(ROOTDIR)/../../Makefile.Test
+include $(ROOTDIR)/Makefile.Test
 
 $(addsuffix .template,$(manifests)): %: ../../../../%
 	ln -sf $< $@
