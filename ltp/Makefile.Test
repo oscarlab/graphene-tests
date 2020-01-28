@@ -36,10 +36,6 @@ all: pal_loader $(target) | $(call expand_target,$(exec_target))
 .PHONY: sgx-tokens
 sgx-tokens: $(call expand_target_to_token,$(exec_target))
 
-# reset CFLAGS, CXXFLAGS which graphene-tests doesn't want
-CFLAGS =
-CXXFLAGS =
-
 ifeq ($(DEBUG),1)
 CC += -g
 CXX += -g
@@ -99,24 +95,30 @@ expand_target_to_sig = $(addsuffix .sig,$(call drop_manifest_suffix,$(1)))
 expand_target_to_sgx = $(addsuffix .manifest.sgx,$(call drop_manifest_suffix,$(1)))
 
 %.token: %.sig
-	$(call cmd,sgx_get_token)
+	@echo [ $@ ]
+	@$(SGX_GET_TOKEN) -output $@ -sig $^ > .output.sgx_get_token.$(basename $*)
 
 %.sig %.manifest.sgx: %.manifest % $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
-	$(call cmd,sgx_sign_exec)
+	@echo [ $@ ]
+	@$(SGX_SIGN) -depend -output $@ -exec $* -manifest $<
 
 %.sig %.manifest.sgx: manifest % $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
-	$(call cmd,sgx_sign_exec)
+	@echo [ $@ ]
+	@$(SGX_SIGN) -depend -output $@ -exec $* -manifest $<
 
 %.sig %.manifest.sgx: %.manifest $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
-	$(call cmd,sgx_sign)
+	@echo [ $@ ]
+	@$(SGX_SIGN) -output $*.manifest.sgx -manifest $< > .output.sgx_sign.$*
 
 .PRECIOUS: %.manifest.sgx.d
 
 %.manifest.sgx.d: %.manifest
-	$(call cmd,sgx_sign_depend_exec)
+	@echo [ $@ ]
+	@$(SGX_SIGN) -depend -output $@ -exec $* -manifest $<
 
 %.manifest.sgx.d: manifest
-	$(call cmd,sgx_sign_depend)
+	@echo [ $@ ]
+	@$(SGX_SIGN) -depend -output $@ -manifest $<
 
 ifeq ($(filter clean,$(MAKECMDGOALS)),)
 include $(addsuffix .manifest.sgx.d,$(call drop_manifest_suffix,$(exec_target)))
