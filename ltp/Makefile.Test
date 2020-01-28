@@ -100,11 +100,11 @@ expand_target_to_sgx = $(addsuffix .manifest.sgx,$(call drop_manifest_suffix,$(1
 
 %.sig %.manifest.sgx: %.manifest % $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
 	@echo [ $@ ]
-	@$(SGX_SIGN) -depend -output $@ -exec $* -manifest $<
+	@$(SGX_SIGN) -output $*.manifest.sgx -exec $* -manifest $< > .output.sgx_sign.$*
 
 %.sig %.manifest.sgx: manifest % $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
 	@echo [ $@ ]
-	@$(SGX_SIGN) -depend -output $@ -exec $* -manifest $<
+	@$(SGX_SIGN) -output $*.manifest.sgx -exec $* -manifest $< > .output.sgx_sign.$*
 
 %.sig %.manifest.sgx: %.manifest $(LIBPAL) $(SGX_SIGNER_KEY) %.manifest.sgx.d
 	@echo [ $@ ]
