@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-## On Ubuntu, this script requires apache2-utils for the ab binary.
+# On Ubuntu, this script requires apache2-utils for the ab binary.
+#
 # Run like: ./benchmark-http.sh host:port
+#
+# It also works with HTTPS, e.g., ./benchmark-http.sh https://localhost:8443
 
 declare -A THROUGHPUTS
 declare -A LATENCIES
@@ -21,8 +24,8 @@ do
     for CONCURRENCY in $CONCURRENCY_LIST
     do
         rm -f OUTPUT
-        echo "ab $OPTIONS -n $REQUESTS -c $CONCURRENCY http://$DOWNLOAD_HOST/$DOWNLOAD_FILE"
-        ab $OPTIONS -n $REQUESTS -c $CONCURRENCY http://$DOWNLOAD_HOST/$DOWNLOAD_FILE > OUTPUT || exit $?
+        echo "ab $OPTIONS -n $REQUESTS -c $CONCURRENCY $DOWNLOAD_HOST/$DOWNLOAD_FILE"
+        ab $OPTIONS -n $REQUESTS -c $CONCURRENCY $DOWNLOAD_HOST/$DOWNLOAD_FILE > OUTPUT || exit $?
 
         sleep 5
 
