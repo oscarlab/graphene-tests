@@ -10,7 +10,8 @@ them to understand the requirements for Apache running under Graphene-SGX.
 We build Apache from the source code instead of using an existing installation.
 On Ubuntu 16.04, please make sure that the following packages are installed:
 ```sh
-sudo apt-get install -y build-essential flex libapr1-dev libaprutil1-dev libpcre2-dev apache2-utils
+sudo apt-get install -y build-essential flex libapr1-dev libaprutil1-dev libpcre2-dev \
+                        apache2-utils libssl-dev
 ```
 
 # Quick Start
@@ -19,23 +20,27 @@ sudo apt-get install -y build-essential flex libapr1-dev libaprutil1-dev libpcre
 # build Apache and the final manifest
 make SGX=1
 
-# run original Apache against a benchmark (benchmark-http.sh, uses ab)
+# run original Apache against HTTP and HTTPS benchmarks (benchmark-http.sh, uses ab)
 make start-native-server &
 ./benchmark-http.sh 127.0.0.1:8001
+./benchmark-http.sh https://127.0.0.1:8443
 kill -SIGINT %%
 
-# run Apache in non-SGX Graphene against a benchmark
+# run Apache in non-SGX Graphene against HTTP and HTTPS benchmarks
 make start-graphene-server &
 ./benchmark-http.sh 127.0.0.1:8001
+./benchmark-http.sh https://127.0.0.1:8443
 kill -SIGINT %%
 
-# run Apache in Graphene-SGX against a benchmark
+# run Apache in Graphene-SGX against HTTP and HTTPS benchmarks
 SGX=1 make start-graphene-server &
 ./benchmark-http.sh 127.0.0.1:8001
+./benchmark-http.sh https://127.0.0.1:8443
 kill -SIGINT %%
 
 # you can also test the server using other utilities like wget
 wget http://127.0.0.1:8001/random/10K.1.html
+wget https://127.0.0.1:8443/random/10K.1.html
 ```
 
 # Running Apache with Different MPMs

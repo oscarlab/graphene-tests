@@ -37,7 +37,7 @@ GRAPHENEDEBUG = none
 endif
 
 .PHONY: all
-all: $(INSTALL_DIR)/bin/httpd httpd.manifest pal_loader config testdata
+all: $(INSTALL_DIR)/bin/httpd httpd.manifest pal_loader config testdata ssldata
 ifeq ($(SGX),1)
 all: httpd.manifest.sgx httpd.sig httpd.token
 endif
@@ -47,7 +47,8 @@ endif
 
 $(INSTALL_DIR)/bin/httpd: $(HTTPD_SRC)/configure
 	cd $(HTTPD_SRC) && ./configure --prefix=$(abspath $(INSTALL_DIR)) \
-		--with-mpm=prefork --enable-mpms-shared='prefork worker event'
+		--with-mpm=prefork --enable-mpms-shared='prefork worker event' \
+		--enable-ssl
 	cd $(HTTPD_SRC) && $(MAKE)
 	cd $(HTTPD_SRC) && $(MAKE) install
 
@@ -84,6 +85,7 @@ httpd-modules: $(INSTALL_DIR)/conf/httpd.conf
 		awk '{print "$(INSTALL_DIR)/" $$3}' > $@
 	@echo $(INSTALL_DIR)/modules/mod_mpm_worker.so >> $@
 	@echo $(INSTALL_DIR)/modules/mod_mpm_event.so  >> $@
+	@echo $(INSTALL_DIR)/modules/mod_ssl.so        >> $@
 
 # Listing all the Apache dependencies, besides Glibc libraries
 .INTERMEDIATE: httpd-ldd
@@ -142,23 +144,17 @@ pal_loader:
 	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
 # Apache configuration and test data
-#
-# The following changes are made in httpd.conf (copied as httpd-graphene.conf):
-# - Remove "Listen ..." (Use a command-line option instead)
-# - Remove "User ..." and "Group ..."
-# - Comment "LoadModule mpm_prefork_module ...." (Use a command-line option instead)
-# - Uncomment "EnableMMAP off"
-# - Uncomment "EnableSendfile on"
-# - Add configuration for the Prefork and Worker MPMs
 
 .PHONY: config
-config: $(INSTALL_DIR)/conf/httpd-graphene.conf
+config: $(INSTALL_DIR)/conf/httpd-graphene.conf $(INSTALL_DIR)/conf/extra/httpd-ssl-graphene.conf
 
 $(INSTALL_DIR)/conf/httpd-graphene.conf: $(INSTALL_DIR)/conf/httpd.conf
 	sed -e "s|^Listen |#Listen |g" \
 		-e "s|^User |#User |g" \
 		-e "s|^Group |#Group |g" \
 		-e "s|^LoadModule mpm_prefork|#LoadModule mpm_prefork|g" \
+		-e "s|^#LoadModule ssl_module|LoadModule ssl_module|g" \
+		-e "s|^#Include conf/extra/httpd-ssl.conf|Include conf/extra/httpd-ssl-graphene.conf|g" \
 		-e "s|#EnableMMAP off|EnableMMAP off|g" \
 		-e "s|#EnableSendfile on|EnableSendfile on|g" \
 	$< > $@
@@ -176,6 +172,13 @@ $(INSTALL_DIR)/conf/httpd-graphene.conf: $(INSTALL_DIR)/conf/httpd.conf
     MaxSpareThreads          75\n\
     ThreadsPerChild          25\n\
 </IfModule>\n" >> $@
+
+$(INSTALL_DIR)/conf/extra/httpd-ssl-graphene.conf: $(INSTALL_DIR)/conf/extra/httpd-ssl.conf
+	sed -e "s|^Listen 443|Listen 127.0.0.1:8443|g" \
+		-e "s|^<VirtualHost _default_:443>|<VirtualHost 127.0.0.1:8443>|g" \
+		-e "s|^ServerName www.example.com:443|ServerName www.example.com:8443|g" \
+		-e "s|^SSLSessionCache|#SSLSessionCache|g" \
+	$< > $@
 
 # HTTP docs:
 # Generating random HTML files in $(INSTALL_DIR)/htdocs/random
@@ -197,6 +200,19 @@ $(RANDOM_DIR)/%.html:
 
 .PHONY: testdata
 testdata: $(TEST_DATA)
+
+# SSL data: key and x.509 self-signed certificate (to test SSL/TLS)
+
+$(INSTALL_DIR)/conf/server.crt: ssl/ca_config.conf
+	openssl genrsa -out ssl/ca.key 2048
+	openssl req -x509 -new -nodes -key ssl/ca.key -sha256 -days 1024 -out ssl/ca.crt -config ssl/ca_config.conf
+	openssl genrsa -out ssl/server.key 2048
+	openssl req -new -key ssl/server.key -out ssl/server.csr -config ssl/ca_config.conf
+	openssl x509 -req -days 360 -in ssl/server.csr -CA ssl/ca.crt -CAkey ssl/ca.key -CAcreateserial -out ssl/server.crt
+	cp -f ssl/* $(INSTALL_DIR)/conf/
+
+.PHONY: ssldata
+ssldata: $(INSTALL_DIR)/conf/server.crt
 
 # Commands for running Apache
 #
