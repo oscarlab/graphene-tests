@@ -282,3 +282,4 @@ clean:
 .PHONY: distclean
 distclean: clean
 	$(RM) -r $(HTTPD_SRC).tar.gz $(HTTPD_SRC) $(INSTALL_DIR)
+	$(RM) ssl/server.* ssl/ca.*
