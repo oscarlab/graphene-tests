@@ -76,8 +76,12 @@ pal_loader:
 
 .PHONY: check
 check: all
-	./pal_loader curl.manifest example.com > OUTPUT
-	@grep -q "Example Domain" OUTPUT && echo "[ Success 1/1 ]"
+	(cd test-docroot; exec python3 -m http.server -b 127.0.0.1 19111) & httpd_pid=$$!; \
+	sleep 1; \
+	./pal_loader curl.manifest http://127.0.0.1:19111/ > OUTPUT; rc=$$?; \
+	kill $$httpd_pid; exit $$rc
+
+	@grep -q "Hello World" OUTPUT && echo "[ Success 1/1 ]"
 	@rm OUTPUT
 
 .PHONY: clean
