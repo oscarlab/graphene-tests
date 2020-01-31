@@ -6,8 +6,8 @@ GRAPHENEDIR ?= ../../../../..
 TF_DIR ?= tensorflow
 BAZEL_BIN ?= $(HOME)/bin/bazel
 
-# tags/v1.9.0
-GIT_COMMIT ?= 25c197e02393bd44f50079945409009dd4d434f8
+GIT_COMMIT ?= v1.9.0
+TAR_SHA256 ?= ffc3151b06823d57b4a408261ba8efe53601563dfe93af0866751d4f6ca5068c
 
 PHONY: default
 default: label_image.manifest
@@ -16,8 +16,10 @@ default: label_image.manifest.sgx
 endif
 
 $(TF_DIR)/configure:
-	git clone https://github.com/tensorflow/tensorflow
-	cd $(TF_DIR) && git checkout $(GIT_COMMIT)
+	$(GRAPHENEDIR)/Scripts/download --output tensorflow.tar.gz --sha256 $(TAR_SHA256)\
+	       --url https://github.com/tensorflow/tensorflow/archive/$(GIT_COMMIT).tar.gz
+	mkdir $(TF_DIR)
+	tar -C $(TF_DIR) --strip-components=1 -xf tensorflow.tar.gz
 
 $(TF_DIR)/bazel-bin/tensorflow/contrib/lite/examples/label_image/label_image: $(TF_DIR)/configure
 	cd $(TF_DIR) && $(BAZEL_BIN) build tensorflow/contrib/lite/examples/label_image
@@ -30,10 +32,8 @@ libtensorflow_framework.so: label_image
 
 INCEPTION_HASH=b1a1f91276e48a9ddf0cb0d854f044ebfbf985dc2c2cedceb52b3d668894299a
 inception_v3.tflite:
-	wget https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_v3_2018_04_27.tgz -O tmp
-	@[ "`sha256sum tmp`" = "$(INCEPTION_HASH)  tmp" ] || \
-		(echo "*** $@ has a wrong hash ***"; rm -f tmp; exit 255)
-	mv -f tmp inception_v3_2018_04_27.tgz
+	$(GRAPHENEDIR)/Scripts/download --output inception_v3_2018_04_27.tgz --sha256 $(INCEPTION_HASH)\
+	       --url https://storage.googleapis.com/download.tensorflow.org/models/tflite/model_zoo/upload_20180427/inception_v3_2018_04_27.tgz
 	tar xfz inception_v3_2018_04_27.tgz
 
 labels.txt: $(TF_DIR)/tensorflow/contrib/lite/java/ovic/src/testdata/labels.txt
@@ -84,7 +84,7 @@ clean:
 distclean: clean
 	$(RM) -r label_image
 	$(RM) inception_v3_2018_04_27.tgz inception_v3.pb inception_v3.tflite labels.txt image.bmp
-	$(RM) -r $(TF_DIR) libtensorflow_framework.so
+	$(RM) -r $(TF_DIR) tensorflow.tar.gz libtensorflow_framework.so
 
 BAZEL_INSTALLER_HASH=17ab70344645359fd4178002f367885e9019ae7507c9c1ade8220f3628383444
 .PHONY: install-dependencies-ubuntu
@@ -93,9 +93,7 @@ install-dependencies-ubuntu:
 	apt-get install -y python-dev python-pip wget git
 	# https://docs.bazel.build/versions/master/install-ubuntu.html
 	apt-get install -y pkg-config zip g++ zlib1g-dev unzip python
-	wget https://github.com/bazelbuild/bazel/releases/download/0.16.1/bazel-0.16.1-installer-linux-x86_64.sh -O tmp
-	@[ "`sha256sum tmp`" = "$(BAZEL_INSTALLER_HASH)  tmp" ] || \
-		(echo "*** bazel-0.16.1-installer-linux-x86_64.sh has a wrong hash ***"; rm -f tmp; exit 255)
-	mv -f tmp bazel-0.16.1-installer-linux-x86_64.sh
+	$(GRAPHENEDIR)/Scripts/download --output bazel-0.16.1-installer-linux-x86_64.sh --sha256 $(BAZEL_INSTALLER_HASH)\
+		--url https://github.com/bazelbuild/bazel/releases/download/0.16.1/bazel-0.16.1-installer-linux-x86_64.sh
 	chmod +x bazel-0.16.1-installer-linux-x86_64.sh
 	./bazel-0.16.1-installer-linux-x86_64.sh --user

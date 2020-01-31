@@ -46,13 +46,7 @@ $(LIGHTTPD_SRC)/configure: $(LIGHTTPD_SRC).tar.gz
 	tar -xzf $<
 
 $(LIGHTTPD_SRC).tar.gz:
-	for MIRROR in $(LIGHTTPD_MIRRORS); do \
-		wget --timeout=10 $${MIRROR}$(LIGHTTPD_SRC).tar.gz -O tmp \
-		&& break; \
-	done
-	@[ "`sha256sum tmp`" = "$(LIGHTTPD_HASH)  tmp" ] || \
-		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
-	mv -f tmp $@
+	$(GRAPHENEDIR)/Scripts/download --output $@ --sha256 $(LIGHTTPD_HASH) $(foreach mirror,$(LIGHTTPD_MIRRORS),--url $(mirror)/$(LIGHTTPD_SRC).tar.gz)
 
 # lighttpd dependencies (generate from ldd):
 #

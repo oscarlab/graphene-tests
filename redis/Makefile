@@ -21,6 +21,7 @@ GRAPHENEDIR = ../../../../..
 
 SRCDIR = src
 COMMIT = 5.0.5
+TAR_SHA256 = 3313d5e09938dc6e16c6911efa4a24b1c494bacb5a917a8e7925ebd55e56be85
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
@@ -37,13 +38,16 @@ endif
 ############################## REDIS EXECUTABLE ###############################
 
 # Redis is built as usual, without any changes to the build process (except to
-# test select syscall instead of poll/epoll). The source is cloned from a public
+# test select syscall instead of poll/epoll). The source is downloaded from the
 # GitHub repo (5.0.5 tag) and built via `make`. The result of this build process
 # is the final executable "src/redis-server".
 
 $(SRCDIR)/Makefile:
-	git clone --recursive https://github.com/antirez/redis $(SRCDIR)
-	cd $(SRCDIR) && git checkout $(COMMIT)
+	$(GRAPHENEDIR)/Scripts/download --output redis.tar.gz \
+		--sha256 $(TAR_SHA256) \
+		--url https://github.com/antirez/redis/archive/$(COMMIT).tar.gz
+	mkdir $(SRCDIR)
+	tar -C $(SRCDIR) --strip-components=1 -xf redis.tar.gz
 
 ifeq ($(USE_SELECT),1)
 $(SRCDIR)/src/redis-server: $(SRCDIR)/Makefile
@@ -114,4 +118,4 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	$(RM) -r $(SRCDIR)
+	$(RM) -r $(SRCDIR) redis.tar.gz

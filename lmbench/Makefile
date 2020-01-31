@@ -47,13 +47,11 @@ $(INSTALLDIR)/lmbench: $(LMBENCHDIR)/src/Makefile
 
 # Automatically downloading and unpacking LMBench source code
 $(LMBENCHDIR)/src/Makefile: $(LMBENCHDIR).tgz
-	[ "`sha256sum $<`" = "$(LMBENCHHASH)  $<" ] || \
-		(echo "*** $< has a wrong hash ***"; exit 255)
 	tar -xzf $<
 	touch $@
 
 $(LMBENCHDIR).tgz:
-	wget $(LMBENCHURL) -O $@
+	$(GRAPHENEDIR)/Scripts/download --output $@ --sha256 $(LMBENCHHASH) --url $(LMBENCHURL)
 
 $(INSTALLDIR)/lmbench-test-ci.sh:
 	cp lmbench-test-ci.sh $@

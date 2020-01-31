@@ -56,13 +56,7 @@ $(NGINX_SRC)/configure: $(NGINX_SRC).tar.gz
 	tar -mxzf $<
 
 $(NGINX_SRC).tar.gz:
-	for MIRROR in $(NGINX_MIRRORS); do \
-		wget --timeout=10 $${MIRROR}$(NGINX_SRC).tar.gz -O tmp \
-		&& break; \
-	done
-	@[ "`sha256sum tmp`" = "$(NGINX_CHECKSUM)  tmp" ] || \
-		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
-	mv -f tmp $@
+	$(GRAPHENEDIR)/Scripts/download --output $@ --sha256 $(NGINX_CHECKSUM) $(foreach mirror,$(NGINX_MIRRORS),--url $(mirror)/$(NGINX_SRC).tar.gz)
 
 # Nginx dependencies (generate from ldd):
 #
