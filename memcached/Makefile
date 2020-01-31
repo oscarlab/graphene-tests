@@ -4,11 +4,11 @@
 # - make SGX=1         -- create SGX no-debug-log manifest
 # - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
 #
-# Any of these invocations clones Memcached git repository and builds Memcached
-# in default configuration and in the latest (master branch) version.
+# Any of these invocations downloads Memcached and builds Memcached in default
+# configuration.
 #
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
-# additionally remove the cloned Memcached git repository.
+# additionally remove the Memcached source.
 
 ################################# CONSTANTS ###################################
 
@@ -16,7 +16,8 @@
 GRAPHENEDIR = ../../../../..
 
 SRCDIR = src
-COMMIT = master
+MEMCACHED_URL ?= https://memcached.org/files/memcached-1.5.21.tar.gz
+MEMCACHED_SHA256 ?= e3d10c06db755b220f43d26d3b68d15ebf737a69c7663529b504ab047efe92f4
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
@@ -33,14 +34,15 @@ endif
 ############################ MEMCACHED EXECUTABLE #############################
 
 # Memcached is built as usual, without any changes to the build process. The
-# source is cloned from a public GitHub repo (master tip) and built via classic
-# ./autogen.sh && ./configure && make. The result of this build process is
-# the final executable "src/memcached".
+# source is downloaded from memcached.org and built via classic ./configure &&
+# make. The result of this build process is the final executable
+# "src/memcached".
 
 $(SRCDIR)/configure:
-	git clone --recursive https://github.com/memcached/memcached $(SRCDIR)
-	cd $(SRCDIR) && git checkout $(COMMIT)
-	cd $(SRCDIR) && ./autogen.sh
+	$(GRAPHENEDIR)/Scripts/download --output memcached.tar.gz \
+		--sha256 $(MEMCACHED_SHA256) --url $(MEMCACHED_URL)
+	mkdir $(SRCDIR)
+	tar -C $(SRCDIR) --strip-components=1 -xf memcached.tar.gz
 
 $(SRCDIR)/memcached: $(SRCDIR)/configure
 	cd $(SRCDIR) && ./configure
@@ -97,4 +99,4 @@ clean:
 
 .PHONY=distclean
 distclean: clean
-	$(RM) -r $(SRCDIR)
+	$(RM) -r $(SRCDIR) memcached.tar.gz

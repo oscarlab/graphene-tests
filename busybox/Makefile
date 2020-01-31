@@ -5,11 +5,10 @@
 # - make SGX=1         -- create SGX no-debug-log manifest
 # - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
 #
-# Any of these invocations clones Busybox git repository and builds it
-# in the latest (master branch) version.
+# Any of these invocations downloads Busybox and builds it.
 #
 # Use `make clean` to remove Graphene-generated files and `make distclean` to
-# additionally remove the cloned Busybox git repository.
+# additionally remove the Busybox source.
 
 ################################# CONSTANTS ###################################
 
@@ -17,7 +16,8 @@
 GRAPHENEDIR = ../../../../..
 
 SRCDIR = src
-COMMIT = master
+BUSYBOX_URL ?= https://busybox.net/downloads/busybox-1.31.1.tar.bz2
+BUSYBOX_SHA256 ?= d0f940a72f648943c1f2211e0e3117387c31d765137d92bd8284a3fb9752a998
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
@@ -35,12 +35,14 @@ endif
 ############################ BUSYBOX EXECUTABLE ###############################
 
 # Busybox is built as usual, without any changes to the build process. The
-# source is cloned from a public repo and built via classic make. The result of
-# this build process is the final executable "src/busybox".
+# source is downloaded and then built via classic make. The result of this
+# build process is the final executable "src/busybox".
 
 $(SRCDIR)/Makefile:
-	git clone https://github.com/mirror/busybox.git $(SRCDIR)
-	cd $(SRCDIR) && git checkout $(COMMIT)
+	$(GRAPHENEDIR)/Scripts/download --output busybox.tar.bz2 \
+		--sha256 $(BUSYBOX_SHA256) --url $(BUSYBOX_URL)
+	mkdir $(SRCDIR)
+	tar -C $(SRCDIR) --strip-components=1 -xf busybox.tar.bz2
 
 $(SRCDIR)/.config: $(SRCDIR)/Makefile
 	cd $(SRCDIR) && make clean && make defconfig
@@ -106,5 +108,5 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	$(RM) -r $(SRCDIR)
+	$(RM) -r $(SRCDIR) busybox.tar.bz2
 

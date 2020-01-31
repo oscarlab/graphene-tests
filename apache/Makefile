@@ -55,13 +55,7 @@ $(HTTPD_SRC)/configure: $(HTTPD_SRC).tar.gz
 	tar -mxzf $<
 
 $(HTTPD_SRC).tar.gz:
-	for MIRROR in $(HTTPD_MIRRORS); do \
-		wget --timeout=10 $${MIRROR}httpd/$(HTTPD_SRC).tar.gz -O tmp \
-		&& break; \
-	done
-	@[ "`sha256sum tmp`" = "$(HTTPD_CHECKSUM)  tmp" ] || \
-		(echo "*** $@ has a wrong checksum ***"; rm -f tmp; exit 255)
-	mv -f tmp $@
+	$(GRAPHENEDIR)/Scripts/download --output $@ --sha256 $(HTTPD_CHECKSUM) $(foreach mirror,$(HTTPD_MIRRORS),--url $(mirror)httpd/$(HTTPD_SRC).tar.gz)
 
 # Apache dependencies (generate from ldd):
 #
