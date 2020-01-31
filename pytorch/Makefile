@@ -1,4 +1,4 @@
-GRAPHENEDIR?=../../../../..
+GRAPHENEDIR ?= ../../../../..
 
 ifeq ($(DEBUG),1)
 GRAPHENEDEBUG = inline
