@@ -34,8 +34,8 @@ endif
 ############################ MEMCACHED EXECUTABLE #############################
 
 # Memcached is built as usual, without any changes to the build process. The
-# source is downloaded from GitHub and built via classic ./autogen.sh &&
-# ./configure && make. The result of this build process is the final executable
+# source is downloaded from memcached.org and built via classic ./configure &&
+# make. The result of this build process is the final executable
 # "src/memcached".
 
 $(SRCDIR)/configure:
