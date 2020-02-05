@@ -21,8 +21,9 @@ installation.
 
 - `sudo apt-get install python3-pip lsb-release` to install `pip` and `lsb_release`. The former is
   required to install additional Python packages while the latter is used by the Makefile.
-- `pip3 install --user torchvision` to install the torchvision Python package and its dependencies
-  (usually in $HOME/.local). WARNING: This downloads several hundred megabytes of data!
+- `pip3 install --user torchvision pillow` to install the torchvision and pillow Python packages and
+  their dependencies (usually in $HOME/.local). WARNING: This downloads several hundred megabytes of
+  data!
 - `python3 -c 'import torchvision ; torchvision.models.alexnet(pretrained=True)'` to download the
   pre-trained model ($HOME/.cache/torch). WARNING: This downloads about 200MB of data!
 
