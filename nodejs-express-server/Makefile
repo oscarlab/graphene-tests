@@ -1,3 +1,39 @@
+# Use one of these commands to build the manifest for Node.js:
+#
+# - make
+# - make DEBUG=1
+# - make SGX=1
+# - make SGX=1 DEBUG=1
+#
+# Use `make clean` to remove Graphene-generated files.
+
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+NODEJS_DIR ?= /usr/bin/
+
+# Relative path to Graphene root and key for enclave signing
+GRAPHENEDIR ?= ../../../../..
+GRAPHENEKEY ?= $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+
+ifeq ($(DEBUG),1)
+GRAPHENEDEBUG = inline
+else
+GRAPHENEDEBUG = none
+endif
+
+.PHONY: all
+all: nodejs.manifest pal_loader
+ifeq ($(SGX),1)
+all: nodejs.token
+endif
+
+# Node.js dependencies (generated from ldd). For SGX, the manifest needs to list all the libraries
+# loaded during execution, so that the signer can include the file hashes.
+
+# We need to replace Glibc dependencies with Graphene-specific Glibc. The Glibc binaries are
+# already listed in the manifest template, so we can skip them from the ldd results.
+GLIBC_DEPS = linux-vdso.so.1 /lib64/ld-linux-x86-64.so.2 libc.so.6 libm.so.6 librt.so.1 \
+             libdl.so.2 libpthread.so.0 libutil.so.1 libresolv.so.2 libnss_dns.so.2
+
 # List all the Node.js dependencies, besides Glibc libraries
 .INTERMEDIATE: nodejs-deps
 nodejs-deps:
