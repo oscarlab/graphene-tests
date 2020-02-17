@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const args = process.argv;
 
-if (args == null || args.length < 3 || args.length > 3){
+if (args == null || args.length != 3){
   console.log('The only argument required is the port number.')
   return;
 }
