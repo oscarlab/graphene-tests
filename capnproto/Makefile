@@ -37,13 +37,16 @@ all: addressbook.token
 endif
 
 $(SRCDIR)/addressbook.c++:
-	mkdir $(SRCDIR)
+	mkdir -p $(SRCDIR)
 	$(GRAPHENEDIR)/Scripts/download --output $(SRCDIR)/addressbook.c++ \
 		--sha256 $(ADDRESSBOOK_SRC_SHA256) --url $(ADDRESSBOOK_SRC_URL)
+
+$(SRCDIR)/addressbook.capnp:
+	mkdir -p $(SRCDIR)
 	$(GRAPHENEDIR)/Scripts/download --output $(SRCDIR)/addressbook.capnp \
 		--sha256 $(ADDRESSBOOK_CAP_SHA256) --url $(ADDRESSBOOK_CAP_URL)
 
-$(SRCDIR)/addressbook: $(SRCDIR)/addressbook.c++
+$(SRCDIR)/addressbook: $(SRCDIR)/addressbook.c++ $(SRCDIR)/addressbook.capnp
 	cd $(SRCDIR) && capnp compile -oc++ addressbook.capnp
 	cd $(SRCDIR) && c++ -std=c++14 -Wall addressbook.c++ addressbook.capnp.c++ \
 	                    `pkg-config --cflags --libs capnp` -o addressbook
@@ -57,7 +60,7 @@ GLIBC_DEPS = linux-vdso.so.1 /lib64/ld-linux-x86-64.so.2 libc.so.6 libm.so.6 lib
 
 # List all Addressbook dependencies, besides Glibc libraries
 .INTERMEDIATE: addressbook-deps
-addressbook-deps:
+addressbook-deps: $(SRCDIR)/addressbook
 	@ldd $(SRCDIR)/addressbook | \
 		awk '{if ($$2 =="=>") {print $$1}}' | \
 		sort | uniq | grep -v -x $(patsubst %,-e %,$(GLIBC_DEPS)) > $@
