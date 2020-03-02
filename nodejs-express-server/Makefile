@@ -76,7 +76,7 @@ pal_loader:
 
 .PHONY: check
 check: all
-	./pal_loader nodejs.manifest helloworld.js > OUTPUT
+	./pal_loader nodejs.manifest helloworld.js 3000 > OUTPUT
 	@grep -q "Hello World" OUTPUT && echo "[ Success 1/1 ]"
 	@rm OUTPUT
 
