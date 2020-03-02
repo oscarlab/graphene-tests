@@ -27,10 +27,14 @@ installation.
 - `python3 -c 'import torchvision ; torchvision.models.alexnet(pretrained=True)'` to download the
   pre-trained model ($HOME/.cache/torch). WARNING: This downloads about 200MB of data!
 
+# Build
+
+Run `make` to build the non-SGX version and `make SGX=1` to build the SGX version.
+
 # Run
 
 Execute any one of the following commands to run the workload
 
 - natively: `python3 pytorchexample.py`
-- with Graphene: `./pal_loader ./pytorch.manifest ./pytorchexample.py`
-- with Graphene-SGX: `SGX=1 ./pal_loader ./pytorch.manifest ./pytorchexample.py`
+- Graphene w/o SGX: `./pal_loader ./pytorch.manifest ./pytorchexample.py`
+- Graphene with SGX: `SGX=1 ./pal_loader ./pytorch.manifest ./pytorchexample.py`

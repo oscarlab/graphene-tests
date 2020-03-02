@@ -1,3 +1,14 @@
+# Build PyTorch as follows:
+#
+# - make               -- create non-SGX no-debug-log manifest
+# - make SGX=1         -- create SGX no-debug-log manifest
+# - make SGX=1 DEBUG=1 -- create SGX debug-log manifest
+#
+# PyTorch and the pre-trained model must be installed on the system.
+# See README for details.
+#
+# Use `make clean` to remove Graphene-generated files.
+
 GRAPHENEDIR ?= ../../../../..
 
 ifeq ($(DEBUG),1)
@@ -17,9 +28,9 @@ UBUNTU_VERSION = $(DISTRIB_ID)$(DISTRIB_RELEASE)
 
 .PHONY: default
 ifeq ($(SGX),1)
-default: pytorch.token python3.token
+default: pytorch.token python3.token pal_loader
 else
-default: pytorch.manifest python3.manifest
+default: pytorch.manifest python3.manifest pal_loader
 endif
 
 pytorch.sig: python3.sig
@@ -54,7 +65,12 @@ python3.sig: python3.manifest
 		-key $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
 		-output python3.manifest.sgx -exec /usr/bin/python3 -manifest $<
 
+pal_loader:
+	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+
 .PHONY: clean
 clean:
-	$(RM) $(addprefix pytorch., token sig manifest manifest.sgx)
-	$(RM) $(addprefix python3., token sig manifest manifest.sgx)
+	$(RM) *.token *.sig *.manifest.sgx *.manifest pal_loader
+
+.PHONY: distclean
+distclean: clean

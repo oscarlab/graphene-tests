@@ -6,24 +6,24 @@
 #
 # ./pal_loader pytorch.manifest pytorchexample.py
 
-# The executable to load in Graphene.
+# The executable to load in Graphene
 loader.exec     = file:/usr/bin/python3
 loader.execname = python3
 
 # Graphene environment, including the path to the library OS and the debug
-# option (inline/none).
+# option (inline/none)
 loader.preload = file:$(GRAPHENEDIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENEDEBUG)
 
 # Environment variables
 loader.env.LD_LIBRARY_PATH = /lib:/usr/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu
 
-# Default glibc files, mounted from the Runtime directory in GRAPHENEDIR.
+# Default glibc files, mounted from the Runtime directory in GRAPHENEDIR
 fs.mount.lib.type = chroot
 fs.mount.lib.path = /lib
 fs.mount.lib.uri = file:$(GRAPHENEDIR)/Runtime/
 
-# More libraries required by PyTorch.
+# More libraries required by PyTorch
 fs.mount.lib2.type = chroot
 fs.mount.lib2.path = /lib/x86_64-linux-gnu
 fs.mount.lib2.uri = file:/lib/x86_64-linux-gnu
@@ -32,22 +32,22 @@ fs.mount.usr.type = chroot
 fs.mount.usr.path = /usr
 fs.mount.usr.uri = file:/usr
 
-# Host-level directory to NSS files required by Glibc + NSS libs.
+# Host-level directory to NSS files required by Glibc + NSS libs
 fs.mount.etc.type = chroot
 fs.mount.etc.path = /etc
 fs.mount.etc.uri = file:/etc
 
-# Workload needs to create temporary files.
+# Workload needs to create temporary files
 fs.mount.tmp.type = chroot
 fs.mount.tmp.path = /tmp
 fs.mount.tmp.uri = file:/tmp
 
-# PyTorch loads its pre-trained models from here.
+# PyTorch loads its pre-trained models from here
 fs.mount.torch.type = chroot
 fs.mount.torch.path = $(HOME)/.cache/torch
 fs.mount.torch.uri = file:$(HOME)/.cache/torch
 
-# When run as `pip install --user ...`, pip installs Python packages here.
+# When run as `pip install --user ...`, pip installs Python packages here
 fs.mount.pip.type = chroot
 fs.mount.pip.path = $(HOME)/.local/lib
 fs.mount.pip.uri  = file:$(HOME)/.local/lib
@@ -58,7 +58,7 @@ fs.mount.pip.uri  = file:$(HOME)/.local/lib
 # size must be specified during signing. If the workload needs more virtual memory
 # than the enclave size, Graphene will not be able to allocate it.
 #
-# In particular, libtorch*.so is a beast at more than 1GiB, thus 4G is the minimum to make this run.
+# In particular, libtorch*.so is more than 1G, thus 4G is the minimum to make this run.
 sgx.enclave_size = 4G
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
@@ -108,35 +108,34 @@ sgx.trusted_files.libnsscompat = file:/lib/x86_64-linux-gnu/libnss_compat.so.2
 sgx.trusted_files.libnssnis    = file:/lib/x86_64-linux-gnu/libnss_nis.so.2
 sgx.trusted_files.libnsl       = file:/lib/x86_64-linux-gnu/libnsl.so.1
 
-# The script to run.
+# The script to run
 sgx.trusted_files.script  = file:pytorchexample.py
 
 # required by Python package ctypes (lib/python3.6/lib-dynload/ctypes.cpython-36m-x86_64-linux-gnu.so)
 # Ubuntu18.04 sgx.trusted_files.libffi = file:/usr/lib/x86_64-linux-gnu/libffi.so.6
 
-# File containing the classes, i.e., the things the classifier has been trained to distinguish
-# between.
+# File containing the classes, i.e., things the classifier has been trained to distinguish between
 sgx.trusted_files.classes = file:classes.txt
 
-# File containing the pre-trained model.
+# File containing the pre-trained model
 sgx.trusted_files.torch   = file:$(HOME)/.cache/torch/checkpoints/alexnet-owt-4df8aa71.pth
+
+# Input image
+sgx.trusted_files.image   = file:input.jpg
 
 # Scratch space
 sgx.allowed_files.tmp     = file:/tmp
 
-# Input image
-sgx.allowed_files.image   = file:input.jpg
-
-# The workload needs to fork/execve. This allows it to do so.
+# The workload needs to fork/execve; this allows it to do so
 sgx.trusted_children.fork = file:python3.sig
 
-# Various locations where Python dependencies are found.
+# Various locations where Python dependencies are found
 sgx.allowed_files.python3    = file:/usr/lib/python3
 sgx.allowed_files.pythonhome = file:$(HOME)/.local/lib
 # Ubuntu16.04 sgx.allowed_files.python35 = file:/usr/lib/python3.5
 # Ubuntu18.04 sgx.allowed_files.python36 = file:/usr/lib/python3.6
 
-# Some Python package wants to access these files on Ubuntu 16.04.
+# Some Python package wants to access these files on Ubuntu 16.04
 # Ubuntu16.04 sgx.allowed_files.aptconfd = file:/etc/apt/apt.conf.d
 # Ubuntu16.04 sgx.allowed_files.aptconf  = file:/etc/apt/apt.conf
 # Ubuntu16.04 sgx.allowed_files.apport   = file:/etc/default/apport
