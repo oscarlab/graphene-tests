@@ -5,7 +5,7 @@ loader.preload = file:$(GRAPHENE_DIR)/Runtime/libsysdb.so
 loader.debug_type = $(GRAPHENE_DEBUG)
 
 loader.env.LD_LIBRARY_PATH = /graphene_lib:/blender_lib:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu
-# graphene implicitly copies host environment variables - overwriting troublesome one
+# Graphene implicitly copies host environment variables - overwriting troublesome one
 loader.env.PWD =
 
 fs.mount.graphene_lib.type = chroot

@@ -1,5 +1,5 @@
 # assumes this makefile lies in cwd
-PWD = $(shell pwd)
+PWD := $(shell pwd)
 
 GRAPHENE_DIR = $(PWD)/../../../../..
 
