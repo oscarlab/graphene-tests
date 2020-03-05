@@ -1,11 +1,11 @@
 # INSECURE!!!
-# This 3 lines are insecure by design and should never be used on production environments.
-# There is a lot of files that blender uses (e.g. bundled python) and listing them here would
-# be counter productive, as they may change between blender releases and this is just a testing
+# These 3 lines are insecure by design and should never be used in production environments.
+# There is a lot of files that Blender uses (e.g. bundled Python) and listing them here would
+# be counter productive, as they may change between Blender releases and this is just a testing
 # manifest.
-# Additionally blender scenes could allow for code execution (e.g. via bundled scripts), so running
-# untrusted scenes should not be allowed. This can be achieved for example by adding scenes to
-# trusted files or uploading them to a running and attested enclave via secured connection.
+# Additionally, Blender scenes could allow for code execution (e.g. via bundled scripts), so
+# running untrusted scenes should not be allowed. This can be achieved for example by adding scenes
+# to trusted files or uploading them to a running and attested enclave via secured connection.
 sgx.allowed_files.blender_dir = file:$(BLENDER_DIR)/$(BLENDER_VER)/
 sgx.allowed_files.blender_input = file:$(DATA_DIR)/scenes/
 sgx.allowed_files.blender_output = file:$(DATA_DIR)/images/
