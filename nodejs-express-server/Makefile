@@ -76,12 +76,12 @@ pal_loader:
 
 .PHONY: check
 check: all
-        ./pal_loader SGX nodejs.manifest.sgx helloworld.js 3000 & server_id=$$!; \
-        sleep 30; \
-        curl localhost:3000 > OUTPUT; \
-        kill -9 $$server_id;
-        @grep -q "Hello World!" OUTPUT && echo "[ Success 1/1 ]"
-        @rm OUTPUT
+	./pal_loader SGX nodejs.manifest.sgx helloworld.js 3000 & server_id=$$!; \
+	sleep 30; \
+	curl localhost:3000 > OUTPUT; \
+	kill -9 $$server_id;
+	@grep -q "Hello World!" OUTPUT && echo "[ Success 1/1 ]"
+	@rm OUTPUT
 
 .PHONY: clean
 clean:
