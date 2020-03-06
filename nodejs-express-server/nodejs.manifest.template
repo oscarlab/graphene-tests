@@ -34,7 +34,7 @@ fs.mount.lib3.uri = file:/usr/lib/x86_64-linux-gnu
 
 # Set enclave size (somewhat arbitrarily) to 1GB. Recall that SGX v1 requires
 # to specify enclave size at enclave creation time.
-sgx.enclave_size = 1G
+sgx.enclave_size = 2G
 
 # Set maximum number of in-enclave threads (somewhat arbitrarily) to 8. Recall
 # that SGX v1 requires to specify the maximum number of simultaneous threads at
