@@ -32,7 +32,7 @@ fs.mount.lib3.type = chroot
 fs.mount.lib3.path = /usr/lib/x86_64-linux-gnu
 fs.mount.lib3.uri = file:/usr/lib/x86_64-linux-gnu
 
-# Set enclave size (somewhat arbitrarily) to 1GB. Recall that SGX v1 requires
+# Set enclave size to 2GB. Recall that SGX v1 requires
 # to specify enclave size at enclave creation time.
 sgx.enclave_size = 2G
 
