@@ -115,12 +115,10 @@ regression: all
 	@mkdir -p scripts/testdir
 
 	./pal_loader bash.manifest -c "ls" > OUTPUT
-	@sleep 1  # to make sure Bash child processes flush output under Graphene-SGX
 	@grep -q "Makefile" OUTPUT && echo "[ Success 1/6 ]"
 	@rm OUTPUT
 
 	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 1" > OUTPUT
-	@sleep 1
 	@grep -q "hello 1" OUTPUT      && echo "[ Success 2/6 ]"
 	@grep -q "createdfile" OUTPUT  && echo "[ Success 3/6 ]"
 	@grep -q "somefile" OUTPUT     && echo "[ Success 4/6 ]"
@@ -128,7 +126,6 @@ regression: all
 	@rm OUTPUT
 
 	./pal_loader bash.manifest -c "cd scripts && bash bash_test.sh 3" > OUTPUT
-	@sleep 1
 	@grep -q "hello 3" OUTPUT      && echo "[ Success 6/6 ]"
 	@rm OUTPUT
 
