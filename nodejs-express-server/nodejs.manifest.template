@@ -36,9 +36,8 @@ fs.mount.lib3.uri = file:/usr/lib/x86_64-linux-gnu
 # to specify enclave size at enclave creation time.
 sgx.enclave_size = 2G
 
-# Set maximum number of in-enclave threads (somewhat arbitrarily) to 8. Recall
-# that SGX v1 requires to specify the maximum number of simultaneous threads at
-# enclave creation time.
+# Set maximum number of in-enclave threads to 8. Recall that SGX v1 requires to
+# specify the maximum number of simultaneous threads at enclave creation time.
 sgx.thread_num = 8
 
 # Specify all libraries used by Node.js and its dependencies (including all libs
