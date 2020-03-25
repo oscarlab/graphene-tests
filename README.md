@@ -1,3 +1,8 @@
+# --- This repository is deprecated ---
+
+All the contents were moved to [the main repository](https://github.com/oscarlab/graphene/).
+See [#1385](https://github.com/oscarlab/graphene/pull/1385).
+
 # Graphene Applications
 
 This repository contains application samples for
